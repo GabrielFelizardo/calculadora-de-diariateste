@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Diárias - Conectado à Planilha</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --azul-escuro: #1a2c5e; --azul-medio: #2c3e80; --azul-claro: #3a56d4; --laranja: #e67e22; --branco: #ffffff; --cinza-claro: #f5f5f5; --cinza-medio: #e0e0e0; --cinza-escuro: #6c757d; --verde: #27ae60; --vermelho: #e74c3c; --sombra: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Open Sans', sans-serif; background-color: var(--cinza-claro); color: #333; line-height: 1.6; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: linear-gradient(to right, var(--azul-medio), var(--azul-claro)); color: white; padding: 20px; box-shadow: var(--sombra); border-radius: 8px 8px 0 0; margin-bottom: 20px; }
+        .header-content { display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo i { font-size: 32px; color: white; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-text h1 { font-size: 24px; font-weight: 700; margin: 0; }
+        .logo-text p { font-size: 14px; opacity: 0.9; margin: 0; }
+        .dolar-info { background: var(--azul-escuro); padding: 10px 15px; border-radius: 6px; text-align: center; }
+        .dolar-info .label { font-size: 12px; opacity: 0.8; }
+        .dolar-info .value { font-size: 18px; font-weight: 700; }
+        .card { background: var(--branco); border-radius: 8px; box-shadow: var(--sombra); overflow: hidden; margin-bottom: 20px; }
+        .card-header { background: var(--azul-escuro); color: white; padding: 12px 20px; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .card-body { padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 992px) { .grid { grid-template-columns: 1fr; } }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--azul-escuro); font-size: 14px; }
+        select, input { width: 100%; padding: 10px 12px; border: 1px solid var(--cinza-medio); border-radius: 4px; font-family: 'Open Sans', sans-serif; font-size: 14px; transition: all 0.3s ease; }
+        select:focus, input:focus { outline: none; border-color: var(--azul-claro); box-shadow: 0 0 0 3px rgba(58, 86, 212, 0.2); }
+        select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; background-size: 14px; }
+        .input-with-icon { position: relative; }
+        .input-with-icon i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--cinza-escuro); font-size: 14px; }
+        .input-with-icon input { padding-left: 38px; }
+        .results-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .result-card { background: var(--cinza-claro); border-radius: 6px; padding: 15px; text-align: center; border-left: 4px solid var(--azul-claro); }
+        .result-card.total { border-left-color: var(--verde); }
+        .result-card .label { font-size: 13px; color: var(--cinza-escuro); margin-bottom: 6px; font-weight: 600; }
+        .result-card .value { font-size: 18px; font-weight: 700; color: var(--azul-escuro); }
+        .result-card.total .value { color: var(--verde); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th { background-color: var(--azul-escuro); color: white; text-align: left; padding: 10px 12px; font-weight: 600; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--cinza-medio); }
+        tr:nth-child(even) { background-color: var(--cinza-claro); }
+        .total-row { font-weight: 700; background-color: #e8f4f8 !important; }
+        .total-row td:last-child { color: var(--verde); font-size: 15px; }
+        .help-text { font-size: 12px; color: var(--cinza-escuro); margin-top: 5px; display: block; }
+        .auto-calculation-note { background-color: #f0f7ff; border-left: 4px solid var(--azul-claro); padding: 10px 15px; margin-top: 15px; font-size: 13px; border-radius: 4px; }
+        .auto-calculation-note i { color: var(--azul-claro); margin-right: 8px; }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--azul-escuro); }
+        .tab { padding: 12px 20px; background: var(--cinza-claro); cursor: pointer; border-radius: 5px 5px 0 0; margin-right: 5px; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
+        .tab.active { background: var(--azul-escuro); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .currency-info { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 13px; }
+        .currency-value { font-weight: 600; color: var(--verde); }
+        .update-time { color: var(--cinza-escuro); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; transform: scale(0.9); transition: all 0.3s ease; }
+        .modal-overlay.active .modal-container { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cinza-medio); padding-bottom: 15px; margin-bottom: 20px; }
+        .modal-header h2 { font-size: 20px; color: var(--azul-escuro); }
+        .modal-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--cinza-escuro); }
+        .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .config-group h4 { font-size: 16px; color: var(--azul-medio); margin-bottom: 15px; border-bottom: 2px solid var(--azul-claro); padding-bottom: 5px; }
+        .config-group label { font-size: 13px; font-weight: normal; }
+        .config-group input { padding: 8px; font-size: 13px; }
+        .modal-footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--cinza-medio); display: flex; justify-content: flex-end; gap: 10px; }
+        .modal-footer button { padding: 10px 20px; border-radius: 5px; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn-save { background: var(--verde); color: white; }
+        .btn-save:hover { background: #229954; }
+        .btn-reset { background: var(--laranja); color: white; }
+        .btn-reset:hover { background: #d35400; }
+        .btn-cancel { background: var(--cinza-medio); color: #333; }
+        .btn-cancel:hover { background: #bdc3c7; }
+        .config-icon { cursor: pointer; font-size: 14px; opacity: 0.7; transition: all 0.3s ease; }
+        .config-icon:hover { opacity: 1; transform: rotate(30deg); }
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--azul-claro); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="logo"><i class="fas fa-globe-americas"></i><div class="logo-text"><h1>Simulador de Diárias</h1><p>Decreto nº 46.611/2019 - Secretaria de Estado de Fazenda</p></div></div>
+                <div class="dolar-info"><div class="label">COTAÇÃO DO DÓLAR</div><div class="value" id="dolar-value">...</div></div>
+            </div>
+        </div>
+        <div class="tabs">
+            <div class="tab active" onclick="openTab('nacional')">Viagem Nacional<i class="fas fa-cog config-icon" id="config-btn-nac" title="Configurar valores nacionais"></i></div>
+            <div class="tab" onclick="openTab('internacional')">Viagem Internacional<i class="fas fa-cog config-icon" id="config-btn-int" title="Configurar valores internacionais (USD)"></i></div>
+        </div>
+        <div id="nacional" class="tab-content active">
+             <div class="card"><div class="card-body" id="calculator-nac-body"><div class="loading-spinner"></div></div></div>
+        </div>
+        <div id="internacional" class="tab-content">
+             <div class="card"><div class="card-body" id="calculator-int-body"><div class="loading-spinner"></div></div></div>
+        </div>
+    </div>
+    <div id="modal-nac-container"></div>
+    <div id="modal-int-container"></div>
+
+    <script>
+        // #############################################################################
+        // # CONFIGURAÇÕES - INFORMAÇÕES ADICIONADAS
+        // #############################################################################
+        const API_URL = "https://script.google.com/macros/s/AKfycbycoGKc-FFYm0XDpkIvyjiqoFQq_9MPadcU-vH8n0J8BV70Yrfj09JH2WGgHplZdvxf/exec";
+        const API_KEY = "subics2025";
+        // #############################################################################
+
+        // VALORES PADRÃO (USADOS APENAS SE A PLANILHA FALHAR)
+        const valoresPadraoNacionais = { "BrasiliaManaus": {"I": { alimentacao: 135.00, pousada: 446.00 }, "II": { alimentacao: 88.00, pousada: 318.70 }, "III": { alimentacao: 60.00, pousada: 261.10 }}, "Capitais": {"I": { alimentacao: 126.00, pousada: 425.95 }, "II": { alimentacao: 84.00, pousada: 302.37 }, "III": { alimentacao: 56.50, pousada: 247.70 }}, "Demais": {"I": { alimentacao: 120.00, pousada: 400.00 }, "II": { alimentacao: 79.00, pousada: 285.00 }, "III": { alimentacao: 52.80, pousada: 234.50 }}, "Outras": {"I": { alimentacao: 96.00, pousada: 362.99 }, "II": { alimentacao: 60.00, pousada: 261.29 }, "III": { alimentacao: 42.00, pousada: 211.50 }} };
+        const valoresPadraoInternacionais = { "grupoA": {"I": { pousada: 220 },"II": { pousada: 320 },"III": { pousada: 180 }}, "grupoB": {"I": { pousada: 320 },"II": { pousada: 320 },"III": { pousada: 270 }}, "grupoC": {"I": { pousada: 330 },"II": { pousada: 330 },"III": { pousada: 330 }}, "grupoD": {"I": { pousada: 450 },"II": { pousada: 450 },"III": { pousada: 350 }} };
+        
+        let dolarRate = 5.50;
+        let valoresNacionais, valoresInternacionais;
+
+        // FUNÇÕES DE COMUNICAÇÃO COM A PLANILHA
+        async function carregarValoresDaPlanilha(sheetName, fallback) {
+            try {
+                const response = await fetch(`${API_URL}?sheet=${sheetName}`);
+                if (!response.ok) throw new Error('Falha na resposta da rede');
+                return await response.json();
+            } catch (error) {
+                console.error(`Erro ao carregar dados da planilha "${sheetName}":`, error);
+                return fallback;
+            }
+        }
+        async function salvarConfiguracoesNaPlanilha(sheetName, novosValores, containerId, calcFunction, modalId) {
+            const button = document.querySelector(`#${modalId} .btn-save`);
+            button.disabled = true;
+            button.textContent = 'Salvando...';
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necessário para Apps Script
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey: API_KEY, sheet: sheetName, valores: novosValores })
+                });
+                alert('Alterações salvas com sucesso! Os dados serão atualizados.');
+                document.getElementById(modalId).classList.remove('active');
+                if (sheetName === 'Nacional') valoresNacionais = novosValores;
+                else valoresInternacionais = novosValores;
+                calcFunction();
+            } catch (error) {
+                console.error("Erro ao salvar dados:", error);
+                alert("Falha ao salvar. Verifique o console para mais detalhes.");
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Salvar Alterações';
+            }
+        }
+
+        // FUNÇÕES DA INTERFACE (CÁLCULO, MODAIS, ETC.)
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+        async function fetchDolarRate() {
+            try {
+                const r = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL'), d = await r.json();
+                dolarRate = parseFloat(d.USDBRL.bid);
+                document.getElementById('dolar-value').textContent = `R$ ${dolarRate.toFixed(2)}`;
+                calcularValoresInternacionais();
+            } catch (e) {
+                document.getElementById('dolar-value').textContent = 'Erro';
+            }
+        }
+        function calcularValoresNacionais() {
+            const g = document.getElementById('grupo').value, c = document.getElementById('cidade').value;
+            const d = parseInt(document.getElementById('diarias').value) || 0, p = parseInt(document.getElementById('pernoites').value) || 0, t = parseInt(document.getElementById('translados').value) || 0;
+            let vA = 0, vP = 0; const vT = 44.00;
+            if (g && c && valoresNacionais[c] && valoresNacionais[c][g]) { vA = valoresNacionais[c][g].alimentacao; vP = valoresNacionais[c][g].pousada; }
+            const tA = d * vA, tP = p * vP, tT = t * vT, tG = tA + tP + tT;
+            const f = (n) => n.toFixed(2).replace('.', ',');
+            document.getElementById('qtd-alimentacao').textContent = d; document.getElementById('qtd-pousada').textContent = p; document.getElementById('qtd-translado').textContent = t;
+            document.getElementById('val-alimentacao').textContent = f(vA); document.getElementById('val-pousada').textContent = f(vP);
+            document.getElementById('total-alimentacao').textContent = f(tA); document.getElementById('total-pousada').textContent = f(tP);
+            document.getElementById('total-translado').textContent = f(tT); document.getElementById('total-geral').textContent = f(tG);
+            document.getElementById('total-alimentacao-card').textContent = `R$ ${f(tA)}`; document.getElementById('total-pousada-card').textContent = `R$ ${f(tP)}`;
+            document.getElementById('total-translado-card').textContent = `R$ ${f(tT)}`; document.getElementById('total-geral-card').textContent = `R$ ${f(tG)}`;
+        }
+        function calcularValoresInternacionais() {
+            const g = document.getElementById('grupo-internacional').value, pg = document.getElementById('pais-grupo').value;
+            const d = parseInt(document.getElementById('diarias-int').value) || 0, p = parseInt(document.getElementById('pernoites-int').value) || 0, t = parseInt(document.getElementById('translados-int').value) || 0;
+            let vPUSD = 0; const vT_BRL = 44.90;
+            if (g && pg && valoresInternacionais[pg] && valoresInternacionais[pg][g]) { vPUSD = valoresInternacionais[pg][g].pousada; }
+            const vAUSD = vPUSD;
+            const tA_USD = d * vAUSD, tP_USD = p * vPUSD, tT_BRL = t * vT_BRL;
+            const tA_BRL = tA_USD * dolarRate, tP_BRL = tP_USD * dolarRate, tG_BRL = tA_BRL + tP_BRL + tT_BRL;
+            const f = (n, c = 'R$') => `${c} ${n.toFixed(2).replace('.', ',')}`;
+            document.getElementById('qtd-alimentacao-int').textContent = d; document.getElementById('qtd-pousada-int').textContent = p; document.getElementById('qtd-translado-int').textContent = t;
+            document.getElementById('val-alimentacao-usd').textContent = f(vAUSD, '$'); document.getElementById('val-pousada-usd').textContent = f(vPUSD, '$');
+            document.getElementById('total-alimentacao-int').textContent = f(tA_BRL); document.getElementById('total-pousada-int').textContent = f(tP_BRL);
+            document.getElementById('total-translado-int-tbl').textContent = f(tT_BRL); document.getElementById('total-geral-int-tbl').textContent = f(tG_BRL);
+            document.getElementById('total-alimentacao-usd').textContent = f(tA_USD, '$'); document.getElementById('total-pousada-usd').textContent = f(tP_USD, '$');
+            document.getElementById('total-translado-int').textContent = f(tT_BRL); document.getElementById('total-geral-int').textContent = f(tG_BRL);
+        }
+
+        // FUNÇÕES PARA GERAR O HTML DINAMICAMENTE
+        function renderizarCalculadoraNacional() {
+            document.getElementById('calculator-nac-body').innerHTML = `
+                <div class="grid"><div><div class="form-group"><label for="grupo">Grupo</label><select id="grupo"><option value="">Selecione</option><option value="I">Grupo I</option><option value="II">Grupo II</option><option value="III">Grupo III</option></select></div><div class="form-group"><label for="cidade">Cidade</label><select id="cidade"><option value="">Selecione</option><option value="BrasiliaManaus">Brasília e Manaus</option><option value="Capitais">Capitais (Grupo 2)</option><option value="Demais">Demais Capitais (+200k)</option><option value="Outras">Outras Cidades</option></select></div><div class="form-group"><label for="diarias">Diárias (Alimentação)</label><div class="input-with-icon"><i class="fas fa-calendar-day"></i><input type="number" id="diarias" min="0" value="0"></div></div><div class="form-group"><label for="pernoites">Pernoites (Pousada)</label><div class="input-with-icon"><i class="fas fa-bed"></i><input type="number" id="pernoites" min="0" value="0"></div></div><div class="form-group"><label for="translados">Translados</label><div class="input-with-icon"><i class="fas fa-car-side"></i><input type="number" id="translados" min="0" value="0"></div><span class="help-text">Valor fixo de R$ 44,00</span></div></div><div><div class="card-header"><i class="fas fa-chart-bar"></i>Resultados - Viagem Nacional</div><div class="results-grid"><div class="result-card"><div class="label">Alimentação</div><div class="value" id="total-alimentacao-card">R$ 0,00</div></div><div class="result-card"><div class="label">Pousada</div><div class="value" id="total-pousada-card">R$ 0,00</div></div><div class="result-card"><div class="label">Translado</div><div class="value" id="total-translado-card">R$ 0,00</div></div><div class="result-card total"><div class="label">Total Geral</div><div class="value" id="total-geral-card">R$ 0,00</div></div></div><table><thead><tr><th>Descrição</th><th>Valor Unitário (R$)</th><th>Quantidade</th><th>Total (R$)</th></tr></thead><tbody><tr><td>Alimentação</td><td id="val-alimentacao">0,00</td><td id="qtd-alimentacao">0</td><td id="total-alimentacao">0,00</td></tr><tr><td>Pousada</td><td id="val-pousada">0,00</td><td id="qtd-pousada">0</td><td id="total-pousada">0,00</td></tr><tr><td>Translado</td><td id="val-translado">44,00</td><td id="qtd-translado">0</td><td id="total-translado">0,00</td></tr><tr class="total-row"><td colspan="3"><strong>Total Geral:</strong></td><td id="total-geral">0,00</td></tr></tbody></table><div class="auto-calculation-note"><i class="fas fa-info-circle"></i> Os valores são calculados automaticamente.</div></div></div>`;
+            ['grupo', 'cidade', 'diarias', 'pernoites', 'translados'].forEach(id => document.getElementById(id).addEventListener('change', calcularValoresNacionais));
+        }
+        function renderizarCalculadoraInternacional() {
+            document.getElementById('calculator-int-body').innerHTML = `
+                <div class="currency-info"><div>Cotação do Dólar: <span class="currency-value" id="dolar-rate">...</span></div></div><div class="grid"><div><div class="form-group"><label for="grupo-internacional">Grupo</label><select id="grupo-internacional"><option value="">Selecione</option><option value="I">Grupo I</option><option value="II">Grupo II</option><option value="III">Grupo III</option></select></div><div class="form-group"><label for="pais-grupo">Grupo de Países</label><select id="pais-grupo"><option value="">Selecione</option><option value="grupoA">Grupo A</option><option value="grupoB">Grupo B</option><option value="grupoC">Grupo C</option><option value="grupoD">Grupo D</option></select></div><div class="form-group"><label for="diarias-int">Diárias (Alimentação)</label><div class="input-with-icon"><i class="fas fa-calendar-day"></i><input type="number" id="diarias-int" min="0" value="0"></div></div><div class="form-group"><label for="pernoites-int">Pernoites (Pousada)</label><div class="input-with-icon"><i class="fas fa-bed"></i><input type="number" id="pernoites-int" min="0" value="0"></div></div><div class="form-group"><label for="translados-int">Translados</label><div class="input-with-icon"><i class="fas fa-car-side"></i><input type="number" id="translados-int" min="0" value="0"></div><span class="help-text">Valor fixo de R$ 44,90</span></div></div><div><div class="card-header"><i class="fas fa-chart-bar"></i>Resultados - Viagem Internacional</div><div class="results-grid"><div class="result-card"><div class="label">Alimentação (USD)</div><div class="value" id="total-alimentacao-usd">$ 0.00</div></div><div class="result-card"><div class="label">Pousada (USD)</div><div class="value" id="total-pousada-usd">$ 0.00</div></div><div class="result-card"><div class="label">Translado (BRL)</div><div class="value" id="total-translado-int">R$ 0,00</div></div><div class="result-card total"><div class="label">Total Geral (BRL)</div><div class="value" id="total-geral-int">R$ 0,00</div></div></div><table><thead><tr><th>Descrição</th><th>Valor Unitário</th><th>Quantidade</th><th>Total (BRL)</th></tr></thead><tbody><tr><td>Alimentação (USD)</td><td id="val-alimentacao-usd">$ 0.00</td><td id="qtd-alimentacao-int">0</td><td id="total-alimentacao-int">R$ 0,00</td></tr><tr><td>Pousada (USD)</td><td id="val-pousada-usd">$ 0.00</td><td id="qtd-pousada-int">0</td><td id="total-pousada-int">R$ 0,00</td></tr><tr><td>Translado (BRL)</td><td id="val-translado-int">R$ 44,90</td><td id="qtd-translado-int">0</td><td id="total-translado-int-tbl">R$ 0,00</td></tr><tr class="total-row"><td colspan="3"><strong>Total Geral (BRL):</strong></td><td id="total-geral-int-tbl">R$ 0,00</td></tr></tbody></table><div class="auto-calculation-note"><i class="fas fa-info-circle"></i> Valores em dólar convertidos para real.</div></div></div>`;
+            ['grupo-internacional', 'pais-grupo', 'diarias-int', 'pernoites-int', 'translados-int'].forEach(id => document.getElementById(id).addEventListener('change', calcularValoresInternacionais));
+        }
+        function renderizarModalNacional() {
+            let html = '<div class="modal-overlay" id="config-modal-nac"><div class="modal-container"><div class="modal-header"><h2>Configurar Valores Nacionais (BRL)</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body"><div class="config-grid">';
+            const cidades = { "BrasiliaManaus": "Brasília e Manaus", "Capitais": "Capitais (Grupo 2)", "Demais": "Demais Capitais (+200k)", "Outras": "Outras Cidades" };
+            for(const cid in cidades) {
+                html += `<div class="config-group"><h4>${cidades[cid]}</h4>`;
+                ['I', 'II', 'III'].forEach(g => {
+                    html += `<div class="form-group"><label>Grupo ${g} - Alimentação</label><input type="number" id="conf-nac-${cid}-${g}-alimentacao" step="0.01"></div>`;
+                    html += `<div class="form-group"><label>Grupo ${g} - Pousada</label><input type="number" id="conf-nac-${cid}-${g}-pousada" step="0.01"></div>`;
+                });
+                html += `</div>`;
+            }
+            html += '</div></div><div class="modal-footer"><button class="btn-reset">Restaurar Padrões</button><button class="btn-cancel">Cancelar</button><button class="btn-save">Salvar Alterações</button></div></div></div>';
+            document.getElementById('modal-nac-container').innerHTML = html;
+        }
+        function renderizarModalInternacional() {
+            let html = '<div class="modal-overlay" id="config-modal-int"><div class="modal-container"><div class="modal-header"><h2>Configurar Valores Internacionais (USD)</h2><button class="modal-close-btn">&times;</button></div><div class="modal-body"><div class="config-grid">';
+            const grupos = { "grupoA": "Grupo de Países A", "grupoB": "Grupo de Países B", "grupoC": "Grupo de Países C", "grupoD": "Grupo de Países D" };
+            for(const pg in grupos) {
+                html += `<div class="config-group"><h4>${grupos[pg]}</h4>`;
+                ['I', 'II', 'III'].forEach(g => {
+                    html += `<div class="form-group"><label>Grupo ${g} (Alim/Pous.)</label><input type="number" id="conf-int-${pg}-${g}-pousada" step="0.01"></div>`;
+                });
+                html += `</div>`;
+            }
+            html += '</div></div><div class="modal-footer"><button class="btn-reset">Restaurar Padrões</button><button class="btn-cancel">Cancelar</button><button class="btn-save">Salvar Alterações</button></div></div></div>';
+            document.getElementById('modal-int-container').innerHTML = html;
+        }
+
+        // INICIALIZAÇÃO DA PÁGINA
+        window.onload = async function() {
+            renderizarCalculadoraNacional();
+            renderizarCalculadoraInternacional();
+            renderizarModalNacional();
+            renderizarModalInternacional();
+            
+            valoresNacionais = await carregarValoresDaPlanilha('Nacional', valoresPadraoNacionais);
+            valoresInternacionais = await carregarValoresDaPlanilha('Internacional', valoresPadraoInternacionais);
+            
+            calcularValoresNacionais();
+            fetchDolarRate();
+
+            // Event Listeners para os Modais
+            const setupModal = (modalId, btnId, preencherFunc, salvarFunc, restaurarFunc, valores, padroes) => {
+                const modal = document.getElementById(modalId);
+                document.getElementById(btnId).addEventListener('click', () => { preencherFunc(valores); modal.classList.add('active'); });
+                modal.querySelector('.modal-close-btn').addEventListener('click', () => modal.classList.remove('active'));
+                modal.querySelector('.btn-cancel').addEventListener('click', () => modal.classList.remove('active'));
+                modal.querySelector('.btn-save').addEventListener('click', () => {
+                    const novos = preencherFunc(null, true); // modo de leitura
+                    salvarFunc(novos);
+                });
+                modal.querySelector('.btn-reset').addEventListener('click', () => {
+                     if (confirm('Restaurar valores padrão? Suas alterações na planilha serão perdidas.')) {
+                        salvarFunc(padroes);
+                     }
+                });
+            };
+            
+            const preencherNac = (vals, read = false) => {
+                const data = read ? {} : vals;
+                for (const c in valoresPadraoNacionais) {
+                    if(read) data[c] = {};
+                    for (const g in valoresPadraoNacionais[c]) {
+                        if(read) data[c][g] = {};
+                        for (const t in valoresPadraoNacionais[c][g]) {
+                            const id = `conf-nac-${c}-${g}-${t}`;
+                            if(read) data[c][g][t] = parseFloat(document.getElementById(id).value) || 0;
+                            else document.getElementById(id).value = vals[c]?.[g]?.[t] ?? 0;
+                        }
+                    }
+                }
+                if(read) return data;
+            };
+            const preencherInt = (vals, read = false) => {
+                 const data = read ? {} : vals;
+                 for (const pg in valoresPadraoInternacionais) {
+                    if(read) data[pg] = {};
+                    for (const g in valoresPadraoInternacionais[pg]) {
+                        if(read) data[pg][g] = {};
+                        const id = `conf-int-${pg}-${g}-pousada`;
+                        if(read) data[pg][g]['pousada'] = parseFloat(document.getElementById(id).value) || 0;
+                        else document.getElementById(id).value = vals[pg]?.[g]?.pousada ?? 0;
+                    }
+                }
+                if(read) return data;
+            };
+
+            setupModal('config-modal-nac', 'config-btn-nac', preencherNac, (novos) => salvarConfiguracoesNaPlanilha('Nacional', novos, 'calculator-nac-body', calcularValoresNacionais, 'config-modal-nac'), null, valoresNacionais, valoresPadraoNacionais);
+            setupModal('config-modal-int', 'config-btn-int', preencherInt, (novos) => salvarConfiguracoesNaPlanilha('Internacional', novos, 'calculator-int-body', calcularValoresInternacionais, 'config-modal-int'), null, valoresInternacionais, valoresPadraoInternacionais);
+        };
+    </script>
+</body>
+</html>

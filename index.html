@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Diária</title>
+    <title>Calculadora de Diária - com PDF</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         :root { --azul-escuro: #1a2c5e; --azul-medio: #2c3e80; --azul-claro: #3a56d4; --laranja: #e67e22; --branco: #ffffff; --cinza-claro: #f5f5f5; --cinza-medio: #e0e0e0; --cinza-escuro: #6c757d; --verde: #27ae60; --vermelho: #e74c3c; --sombra: 0 4px 6px rgba(0, 0, 0, 0.1); }
@@ -30,6 +31,8 @@
         @media (max-width: 992px) { .grid { grid-template-columns: 1fr; } }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--azul-escuro); font-size: 14px; }
+        .label-with-icon { display: flex; align-items: center; gap: 8px; }
+        .info-icon { background: var(--cinza-medio); color: var(--azul-escuro); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
         select, input { width: 100%; padding: 10px 12px; border: 1px solid var(--cinza-medio); border-radius: 4px; font-family: 'Open Sans', sans-serif; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
         th { background-color: var(--azul-escuro); color: white; text-align: left; padding: 10px 12px; font-weight: 600; }
@@ -47,6 +50,15 @@
         .preview-grid { display: grid; grid-template-columns: 150px 1fr; gap: 8px 15px; font-size: 14px; margin-bottom: 15px; }
         .preview-grid strong { color: #333; }
         .preview-grid span { color: var(--azul-medio); font-weight: 600; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; transform: scale(0.9); transition: all 0.3s ease; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cinza-medio); padding-bottom: 15px; margin-bottom: 20px; }
+        .modal-header h2 { font-size: 20px; color: var(--azul-escuro); }
+        .modal-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--cinza-escuro); }
+        .paises-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .paises-group h4 { font-size: 16px; color: var(--azul-medio); margin-bottom: 10px; border-bottom: 2px solid var(--azul-claro); padding-bottom: 5px; }
+        .paises-list span { display: block; margin-bottom: 4px; font-size: 13px; color: #555; }
         .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--azul-claro); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
         .action-button { color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 600; cursor: pointer; }
         .action-button i { margin-right: 8px; }
@@ -137,6 +149,8 @@
         Desenvolvido por: Gabriel Felizardo da Silva
     </footer>
 
+    <div id="paises-modal-container"></div>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwaqI-FnI29vTMwYXxQeTViw1F-YPsl4yo1C9_9tAJDYkjuCy-dbQ_Z425ceJvdoJ8uwg/exec";
         let dolarRate = 5.50;
@@ -192,17 +206,17 @@
             const vT = configValores.translado_nacional || 44.00;
             if (g && c && valoresNacionais[c] && valoresNacionais[c][g]) { vA = valoresNacionais[c][g].alimentacao; vP = valoresNacionais[c][g].pousada; }
             const tA = d * vA, tP = p * vP, tT = t * vT, tG = tA + tP + tT;
-            const f = (n) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const f = (n, c = '') => `${c}${n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             document.getElementById('qtd-alimentacao').textContent = d;
             document.getElementById('qtd-pousada').textContent = p;
             document.getElementById('qtd-translado').textContent = t;
-            document.getElementById('val-alimentacao').textContent = f(vA);
-            document.getElementById('val-pousada').textContent = f(vP);
-            document.getElementById('val-translado').textContent = f(vT);
-            document.getElementById('total-alimentacao').textContent = f(tA);
-            document.getElementById('total-pousada').textContent = f(tP);
-            document.getElementById('total-translado').textContent = f(tT);
-            document.getElementById('total-geral').textContent = f(tG);
+            document.getElementById('val-alimentacao').textContent = f(vA, 'R$ ');
+            document.getElementById('val-pousada').textContent = f(vP, 'R$ ');
+            document.getElementById('val-translado').textContent = f(vT, 'R$ ');
+            document.getElementById('total-alimentacao').textContent = f(tA, 'R$ ');
+            document.getElementById('total-pousada').textContent = f(tP, 'R$ ');
+            document.getElementById('total-translado').textContent = f(tT, 'R$ ');
+            document.getElementById('total-geral').textContent = f(tG, 'R$ ');
             atualizarPreview();
         }
         
@@ -263,10 +277,10 @@
                 const cidadeSelect = document.getElementById('cidade');
                 document.getElementById('preview-grupo').textContent = grupoSelect.value ? grupoSelect.options[grupoSelect.selectedIndex].text : '...';
                 document.getElementById('preview-localidade').textContent = cidadeSelect.value ? cidadeSelect.options[cidadeSelect.selectedIndex].text : '...';
-                document.getElementById('preview-total-alimentacao').textContent = 'R$ ' + document.getElementById('total-alimentacao').textContent;
-                document.getElementById('preview-total-pousada').textContent = 'R$ ' + document.getElementById('total-pousada').textContent;
-                document.getElementById('preview-total-translado').textContent = 'R$ ' + document.getElementById('total-translado').textContent;
-                document.getElementById('preview-total-geral').textContent = 'R$ ' + document.getElementById('total-geral').textContent;
+                document.getElementById('preview-total-alimentacao').textContent = document.getElementById('total-alimentacao').textContent;
+                document.getElementById('preview-total-pousada').textContent = document.getElementById('total-pousada').textContent;
+                document.getElementById('preview-total-translado').textContent = document.getElementById('total-translado').textContent;
+                document.getElementById('preview-total-geral').textContent = document.getElementById('total-geral').textContent;
             } else {
                 if(!document.getElementById('grupo-internacional')) return;
                 document.getElementById('preview-tipo-viagem').textContent = 'Internacional';
@@ -369,6 +383,21 @@
                 </div>`;
             ['grupo-internacional', 'pais-grupo', 'diarias-completas-int', 'translados-int'].forEach(id => document.getElementById(id).addEventListener('input', calcularValoresInternacionais));
         }
+        function renderizarModalPaises() {
+            let html = `<div class="modal-overlay" id="paises-modal"><div class="modal-container">
+                <div class="modal-header"><h2>Grupos de Países</h2><button type="button" class="modal-close-btn">&times;</button></div>
+                <div class="modal-body">
+                    <input type="search" id="search-paises" placeholder="Pesquisar país..." style="margin-bottom: 20px;">
+                    <div class="paises-grid">
+                        <div class="paises-group"><h4>Grupo A</h4><div class="paises-list"><span>Afeganistão</span><span>Armênia</span><span>Bangladesh</span><span>Belarus</span><span>Bolívia</span><span>Benin</span><span>Burkina-Fasso</span><span>Butão</span><span>Comores</span><span>República Popular Democrática da Coréia</span><span>Costa Rica</span><span>El Salvador</span><span>Equador</span><span>Eslovênia</span><span>Filipinas</span><span>Gâmbia</span><span>Guiana</span><span>Guiné Bissau</span><span>Guiné</span><span>Honduras</span><span>Indonésia</span><span>Irã</span><span>Iraque</span><span>Laos</span><span>Líbano</span><span>Malásia</span><span>Maldivas</span><span>Marrocos</span><span>Mongólia</span><span>Myanmar</span><span>Namíbia</span><span>Nauru</span><span>Nepal</span><span>Nicarágua</span><span>Panamá</span><span>Paraguai</span><span>Rep. Centro Africana</span><span>República Togolesa</span><span>Salomão</span><span>Samoa</span><span>Seychelles</span><span>Serra Leoa</span><span>Síria</span><span>Somália</span><span>Sri Lanka</span><span>Suazilândia</span><span>Suriname</span><span>Tadjiquistão</span><span>Tailândia</span><span>Timor Leste</span><span>Tonga</span><span>Tunísia</span><span>Turcomenistão</span><span>Turquia</span><span>Tuvalu</span><span>Vanuatu</span><span>Vietnã</span><span>Zimbábue</span></div></div>
+                        <div class="paises-group"><h4>Grupo B</h4><div class="paises-list"><span>África do Sul</span><span>Albânia</span><span>Andorra</span><span>Argélia</span><span>Austrália</span><span>Barbados</span><span>Belize</span><span>Bósnia-Herzegovina</span><span>Burundi</span><span>Cabo Verde</span><span>Camarões</span><span>Camboja</span><span>Chade</span><span>Chipre</span><span>Colômbia</span><span>Dominica</span><span>Egito</span><span>Eritréia</span><span>Etiópia</span><span>Gana</span><span>Geórgia</span><span>Granada</span><span>Guiné-Equatorial</span><span>Haiti</span><span>Hungria</span><span>lêmen</span><span>Ilhas Marshall</span><span>Índia</span><span>Kiribati</span><span>Kuwait</span><span>Lesoto</span><span>Líbia</span><span>Macedônia</span><span>Madagascar</span><span>Malauí</span><span>Micronésia</span><span>Moçambique</span><span>Moldávia</span><span>Níger</span><span>Nigéria</span><span>Nova Zelândia</span><span>Palau</span><span>Papua Nova Guiné</span><span>Paquistão</span><span>Polônia</span><span>Quênia</span><span>República Dominicana</span><span>República Eslovaca</span><span>Romênia</span><span>Ruanda</span><span>São Tomé e Príncipe</span><span>Senegal</span><span>Sudão</span><span>Tanzânia</span><span>Uruguai</span><span>Uzbequistão</span><span>Venezuela</span></div></div>
+                        <div class="paises-group"><h4>Grupo C</h4><div class="paises-list"><span>Antígua e Barbuda</span><span>Arábia Saudita</span><span>Argentina</span><span>Azerbaijão</span><span>Bahamas</span><span>Bahrein</span><span>Brunei Darussalam</span><span>Botswana</span><span>Bulgária</span><span>Canadá</span><span>Chile</span><span>Cingapura</span><span>Congo</span><span>Costa do Marfim</span><span>Cuba</span><span>Djibuti</span><span>Fiji</span><span>Gabão</span><span>Guatemala</span><span>Jamaica</span><span>Jordânia</span><span>Letônia</span><span>Libéria</span><span>Lituânia</span><span>Mali</span><span>Malta</span><span>Maurício</span><span>Mauritânia</span><span>México</span><span>Peru</span><span>República Democrática do Congo</span><span>República Tcheca</span><span>Rússia</span><span>San Marino</span><span>Santa Lúcia</span><span>São Cristóvão e Névis</span><span>São Vicente e Granadinas</span><span>Taiwan</span><span>Trinidad e Tobago</span><span>Ucrânia</span><span>Uganda</span><span>Zâmbia</span></div></div>
+                        <div class="paises-group"><h4>Grupo D</h4><div class="paises-list"><span>Alemanha</span><span>Angola</span><span>Áustria</span><span>Bélgica</span><span>Catar</span><span>Cazaquistão</span><span>China</span><span>Coréia do Sul</span><span>Croácia</span><span>Dinamarca</span><span>Emirados Árabes</span><span>Espanha</span><span>Estados Unidos da América</span><span>Estônia</span><span>Finlândia</span><span>França</span><span>Grécia</span><span>Hong Kong</span><span>Irlanda</span><span>Islândia</span><span>Israel</span><span>Itália</span><span>Japão</span><span>Liechtenstein</span><span>Luxemburgo</span><span>Mônaco</span><span>Montenegro</span><span>Noruega</span><span>Omã</span><span>Países Baixos</span><span>Portugal</span><span>Reino Unido</span><span>República Quirguiz</span><span>Sérvia</span><span>Suécia</span><span>Suíça</span></div></div>
+                    </div>
+                </div>
+            </div></div>`;
+            document.getElementById('paises-modal-container').innerHTML = html;
+        }
         
         function toggleInfoPanel() {
             const infoCard = document.getElementById('info-solicitacao-card');
@@ -386,9 +415,23 @@
             atualizarPreview();
         }
 
+        function filtrarPaises() {
+            const termo = document.getElementById('search-paises').value.toLowerCase();
+            const paises = document.querySelectorAll('.paises-list span');
+            paises.forEach(pais => {
+                const nomePais = pais.textContent.toLowerCase();
+                if (nomePais.includes(termo)) {
+                    pais.style.display = 'block';
+                } else {
+                    pais.style.display = 'none';
+                }
+            });
+        }
+
         window.onload = async function() {
             renderizarCalculadoraNacional();
             renderizarCalculadoraInternacional();
+            renderizarModalPaises();
             
             await carregarTodosOsValores();
             await fetchDolarRate();
@@ -401,9 +444,12 @@
                 document.getElementById(id).addEventListener('input', atualizarPreview);
             });
             document.getElementById('toggle-info-btn').addEventListener('click', toggleInfoPanel);
+
+            const paisesModal = document.getElementById('paises-modal');
+            document.getElementById('paises-info-btn').addEventListener('click', () => paisesModal.classList.add('active'));
+            paisesModal.querySelector('.modal-close-btn').addEventListener('click', () => paisesModal.classList.remove('active'));
+            document.getElementById('search-paises').addEventListener('keyup', filtrarPaises);
         };
     </script>
 </body>
 </html>
-
-

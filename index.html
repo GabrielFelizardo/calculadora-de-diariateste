@@ -6,14 +6,26 @@
     <title>Calculadora de Diária</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        :root { --azul-escuro: #1a2c5e; --azul-medio: #2c3e80; --azul-claro: #3a56d4; --laranja: #e67e22; --branco: #ffffff; --cinza-claro: #f5f5f5; --cinza-medio: #e0e0e0; --cinza-escuro: #6c757d; --verde: #27ae60; --vermelho: #e74c3c; --sombra: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        :root { 
+            --azul-marinho: #191970; 
+            --roxo: #4B0082; 
+            --azul-texto: #1e3b8a;
+            --laranja: #e67e22; 
+            --branco: #ffffff; 
+            --cinza-claro: #f5f5f5; 
+            --cinza-medio: #e0e0e0; 
+            --cinza-escuro: #6c757d; 
+            --verde: #27ae60; 
+            --vermelho: #e74c3c; 
+            --sombra: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --azul-claro: #3498db; /* <-- CORREÇÃO DO BOTÃO */
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Open Sans', sans-serif; background-color: var(--cinza-claro); color: #333; line-height: 1.6; padding: 20px; min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; }
-        .header { background: linear-gradient(to right, var(--azul-medio), var(--azul-claro)); color: white; padding: 20px; box-shadow: var(--sombra); border-radius: 8px 8px 0 0; margin-bottom: 20px; }
+        .header { background: linear-gradient(to right, var(--azul-marinho), var(--roxo)); color: white; padding: 20px; box-shadow: var(--sombra); border-radius: 8px 8px 0 0; margin-bottom: 20px; }
         .header-content { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;}
         .logo { display: flex; align-items: center; gap: 15px; }
         .logo i { font-size: 32px; color: white; }
@@ -21,35 +33,35 @@
         .logo-text h1 { font-size: 24px; font-weight: 700; margin: 0; }
         .logo-text p { font-size: 14px; opacity: 0.9; margin: 0; }
         .header-actions { display: flex; align-items: center; gap: 20px; }
-        .dolar-info { background: var(--azul-escuro); padding: 10px 15px; border-radius: 6px; text-align: center; }
+        .dolar-info { background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 6px; text-align: center; }
         .dolar-info .label { font-size: 12px; opacity: 0.8; }
         .dolar-info .value { font-size: 18px; font-weight: 700; }
         .card { background: var(--branco); border-radius: 8px; box-shadow: var(--sombra); overflow: hidden; margin-bottom: 20px; }
-        .card-header { background: var(--azul-escuro); color: white; padding: 12px 20px; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .card-header { background: var(--azul-marinho); color: white; padding: 12px 20px; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .card-body { padding: 20px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 992px) { .grid { grid-template-columns: 1fr; } }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--azul-escuro); font-size: 14px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--azul-texto); font-size: 14px; }
         .label-with-icon { display: flex; align-items: center; gap: 8px; }
-        .info-icon { background: var(--cinza-medio); color: var(--azul-escuro); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
+        .info-icon { background: var(--cinza-medio); color: var(--azul-texto); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
         select, input { width: 100%; padding: 10px 12px; border: 1px solid var(--cinza-medio); border-radius: 4px; font-family: 'Open Sans', sans-serif; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        th { background-color: var(--azul-escuro); color: white; text-align: left; padding: 10px 12px; font-weight: 600; }
+        th { background-color: var(--azul-marinho); color: white; text-align: left; padding: 10px 12px; font-weight: 600; }
         td { padding: 10px 12px; border-bottom: 1px solid var(--cinza-medio); }
         .total-row { font-weight: 700; background-color: #e8f4f8 !important; }
         .total-row td:last-child { color: var(--verde); font-size: 15px; }
         .help-text { font-size: 12px; color: var(--cinza-escuro); margin-top: 5px; display: block; }
-        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--azul-escuro); }
-        .tab { padding: 12px 20px; background: var(--cinza-claro); cursor: pointer; border-radius: 5px 5px 0 0; margin-right: 5px; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
-        .tab.active { background: var(--azul-escuro); color: white; }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--azul-marinho); }
+        .tab { padding: 12px 20px; background: var(--cinza-claro); cursor: pointer; border-radius: 5px 5px 0 0; margin-right: 5px; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; color: var(--azul-texto);}
+        .tab.active { background: linear-gradient(to right, var(--azul-marinho), var(--roxo)); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .preview-block { background-color: #eef2f7; padding: 20px; border-radius: 8px; border: 1px dashed var(--azul-medio); }
-        .preview-block h4 { color: var(--azul-escuro); border-bottom: 1px solid var(--cinza-medio); padding-bottom: 8px; margin-bottom: 10px; font-size: 15px; }
+        .preview-block h4 { color: var(--azul-marinho); border-bottom: 1px solid var(--cinza-medio); padding-bottom: 8px; margin-bottom: 10px; font-size: 15px; }
         .preview-grid { display: grid; grid-template-columns: 150px 1fr; gap: 8px 15px; font-size: 14px; margin-bottom: 15px; }
         .preview-grid strong { color: #333; }
-        .preview-grid span { color: var(--azul-medio); font-weight: 600; }
+        .preview-grid span { color: var(--azul-texto); font-weight: 600; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; transform: scale(0.9); transition: all 0.3s ease; }
@@ -183,7 +195,23 @@
             atualizarPreview();
         }
 
-        async function fetchDolarRate() { try { const r = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL'), d = await r.json(); dolarRate = parseFloat(d.USDBRL.bid); document.getElementById('dolar-value').textContent = `R$ ${dolarRate.toFixed(2)}`; if(document.getElementById('internacional').classList.contains('active')) calcularValoresInternacionais(); } catch (e) { document.getElementById('dolar-value').textContent = 'Erro'; } }
+        // <-- INÍCIO DA ALTERAÇÃO DA API
+        async function fetchDolarRate() {
+            try {
+                const r = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
+                if (!r.ok) throw new Error('Falha na resposta da rede.');
+                const d = await r.json();
+                dolarRate = parseFloat(d.USDBRL.bid);
+                document.getElementById('dolar-value').textContent = `R$ ${dolarRate.toFixed(2)}`;
+                if(document.getElementById('internacional').classList.contains('active')) {
+                    calcularValoresInternacionais();
+                }
+            } catch (e) {
+                console.error("Erro ao buscar cotação do dólar:", e);
+                document.getElementById('dolar-value').textContent = 'Erro';
+            }
+        }
+        // <-- FIM DA ALTERAÇÃO DA API
         
         async function fetchHoraAtual() {
             try {
@@ -346,10 +374,10 @@
                         <table>
                             <thead><tr><th>Descrição</th><th>Valor Unitário (R$)</th><th>Quantidade</th><th>Total (R$)</th></tr></thead>
                             <tbody>
-                                <tr><td>Alimentação</td><td id="val-alimentacao">0,00</td><td id="qtd-alimentacao">0</td><td id="total-alimentacao">0,00</td></tr>
-                                <tr><td>Pousada</td><td id="val-pousada">0,00</td><td id="qtd-pousada">0</td><td id="total-pousada">0,00</td></tr>
-                                <tr><td>Translado</td><td id="val-translado">44,00</td><td id="qtd-translado">0</td><td id="total-translado">0,00</td></tr>
-                                <tr class="total-row"><td colspan="3"><strong>Total Geral:</strong></td><td id="total-geral">0,00</td></tr>
+                                <tr><td>Alimentação</td><td id="val-alimentacao">R$ 0,00</td><td id="qtd-alimentacao">0</td><td id="total-alimentacao">R$ 0,00</td></tr>
+                                <tr><td>Pousada</td><td id="val-pousada">R$ 0,00</td><td id="qtd-pousada">0</td><td id="total-pousada">R$ 0,00</td></tr>
+                                <tr><td>Translado</td><td id="val-translado">R$ 44,00</td><td id="qtd-translado">0</td><td id="total-translado">R$ 0,00</td></tr>
+                                <tr class="total-row"><td colspan="3"><strong>Total Geral:</strong></td><td id="total-geral">R$ 0,00</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -373,7 +401,7 @@
                         <table>
                             <thead><tr><th>Descrição</th><th>Valor Unitário</th><th>Quantidade</th><th>Total (BRL)</th></tr></thead>
                             <tbody>
-                                <tr><td>Diária Completa</td><td id="val-diaria-usd">$ 0.00</td><td id="qtd-diaria-int">0</td><td id="total-diaria-int-brl">R$ 0,00</td></tr>
+                                <tr><td>Diária Completa</td><td id="val-diaria-usd">$ 0,00</td><td id="qtd-diaria-int">0</td><td id="total-diaria-int-brl">R$ 0,00</td></tr>
                                 <tr><td>Translado</td><td id="val-translado-int">R$ 44,90</td><td id="qtd-translado-int">0</td><td id="total-translado-int-tbl">R$ 0,00</td></tr>
                                 <tr class="total-row"><td colspan="3"><strong>Total Geral (BRL):</strong></td><td id="total-geral-int-tbl">R$ 0,00</td></tr>
                             </tbody>
@@ -435,6 +463,7 @@
             
             await carregarTodosOsValores();
             await fetchDolarRate();
+            setInterval(fetchDolarRate, 60 * 1000); // Atualiza a cotação a cada 1 minuto
             
             calcularValoresNacionais();
             calcularValoresInternacionais();
@@ -453,4 +482,3 @@
     </script>
 </body>
 </html>
-

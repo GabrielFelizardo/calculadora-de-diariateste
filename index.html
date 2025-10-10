@@ -3,482 +3,1676 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Diária</title>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Calculadora de Diária - SEDEICS</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cstyle%3E path %7B fill: %231e3a8a; %7D @media (prefers-color-scheme: dark) %7B path %7B fill: %23ffffff; %7D %7D%3C/style%3E%3Cpath d='M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64V400c0 44.2 35.8 80 80 80H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H80c-8.8 0-16-7.2-16-16V64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z'/%3E%3C/svg%3E">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { 
-            --azul-marinho: #191970; 
-            --roxo: #4B0082; 
-            --azul-texto: #1e3b8a;
-            --laranja: #e67e22; 
-            --branco: #ffffff; 
-            --cinza-claro: #f5f5f5; 
-            --cinza-medio: #e0e0e0; 
-            --cinza-escuro: #6c757d; 
-            --verde: #27ae60; 
-            --vermelho: #e74c3c; 
-            --sombra: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --azul-claro: #3498db; /* <-- CORREÇÃO DO BOTÃO */
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #475569;
+            --accent: #0369a1;
+            --success: #047857;
+            --warning: #d97706;
+            --danger: #b91c1c;
+            --info: #0891b2;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Open Sans', sans-serif; background-color: var(--cinza-claro); color: #333; line-height: 1.6; padding: 20px; min-height: 100vh; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { background: linear-gradient(to right, var(--azul-marinho), var(--roxo)); color: white; padding: 20px; box-shadow: var(--sombra); border-radius: 8px 8px 0 0; margin-bottom: 20px; }
-        .header-content { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;}
-        .logo { display: flex; align-items: center; gap: 15px; }
-        .logo i { font-size: 32px; color: white; }
-        .logo-text { display: flex; flex-direction: column; }
-        .logo-text h1 { font-size: 24px; font-weight: 700; margin: 0; }
-        .logo-text p { font-size: 14px; opacity: 0.9; margin: 0; }
-        .header-actions { display: flex; align-items: center; gap: 20px; }
-        .dolar-info { background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 6px; text-align: center; }
-        .dolar-info .label { font-size: 12px; opacity: 0.8; }
-        .dolar-info .value { font-size: 18px; font-weight: 700; }
-        .card { background: var(--branco); border-radius: 8px; box-shadow: var(--sombra); overflow: hidden; margin-bottom: 20px; }
-        .card-header { background: var(--azul-marinho); color: white; padding: 12px 20px; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .card-body { padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 992px) { .grid { grid-template-columns: 1fr; } }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--azul-texto); font-size: 14px; }
-        .label-with-icon { display: flex; align-items: center; gap: 8px; }
-        .info-icon { background: var(--cinza-medio); color: var(--azul-texto); width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
-        select, input { width: 100%; padding: 10px 12px; border: 1px solid var(--cinza-medio); border-radius: 4px; font-family: 'Open Sans', sans-serif; font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        th { background-color: var(--azul-marinho); color: white; text-align: left; padding: 10px 12px; font-weight: 600; }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--cinza-medio); }
-        .total-row { font-weight: 700; background-color: #e8f4f8 !important; }
-        .total-row td:last-child { color: var(--verde); font-size: 15px; }
-        .help-text { font-size: 12px; color: var(--cinza-escuro); margin-top: 5px; display: block; }
-        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--azul-marinho); }
-        .tab { padding: 12px 20px; background: var(--cinza-claro); cursor: pointer; border-radius: 5px 5px 0 0; margin-right: 5px; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; color: var(--azul-texto);}
-        .tab.active { background: linear-gradient(to right, var(--azul-marinho), var(--roxo)); color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .preview-block { background-color: #eef2f7; padding: 20px; border-radius: 8px; border: 1px dashed var(--azul-medio); }
-        .preview-block h4 { color: var(--azul-marinho); border-bottom: 1px solid var(--cinza-medio); padding-bottom: 8px; margin-bottom: 10px; font-size: 15px; }
-        .preview-grid { display: grid; grid-template-columns: 150px 1fr; gap: 8px 15px; font-size: 14px; margin-bottom: 15px; }
-        .preview-grid strong { color: #333; }
-        .preview-grid span { color: var(--azul-texto); font-weight: 600; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; transform: scale(0.9); transition: all 0.3s ease; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cinza-medio); padding-bottom: 15px; margin-bottom: 20px; }
-        .modal-header h2 { font-size: 20px; color: var(--azul-escuro); }
-        .modal-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--cinza-escuro); }
-        .paises-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .paises-group h4 { font-size: 16px; color: var(--azul-medio); margin-bottom: 10px; border-bottom: 2px solid var(--azul-claro); padding-bottom: 5px; }
-        .paises-list span { display: block; margin-bottom: 4px; font-size: 13px; color: #555; }
-        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--azul-claro); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
-        .action-button { color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: 600; cursor: pointer; }
-        .action-button i { margin-right: 8px; }
-        .actions-container { text-align: right; padding-top: 20px; border-top: 1px solid var(--cinza-medio); margin-top: 20px; }
-        footer { text-align: center; padding: 20px 0; font-size: 12px; color: var(--cinza-escuro); }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .gov-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            padding: 1.25rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .gov-header .container-fluid {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .gov-logo-img {
+            height: 90px;
+            width: auto;
+            display: block;
+        }
+
+        .system-title {
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            text-align: center;
+        }
+
+        .system-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            font-weight: 400;
+            margin-top: 0.25rem;
+            text-align: center;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .btn-header {
+            padding: 0.45rem 0.85rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 0.78rem;
+            border: 2px solid;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-header-toggle {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(255, 255, 255, 1);
+            color: var(--primary);
+        }
+
+        .btn-header-toggle:hover {
+            background: white;
+            color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .dolar-info {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 0.6rem 0.9rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            min-width: 140px;
+        }
+
+        .dolar-info .label {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .dolar-info .value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.65rem;
+            margin-top: 0.25rem;
+            opacity: 0.9;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem 2rem;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid var(--border);
+            background: #f8fafc;
+            padding: 0 1.5rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            font-weight: 600;
+            border: none;
+            padding: 1rem 1.5rem;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+            background: rgba(30, 58, 138, 0.05);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: white;
+            border-bottom-color: var(--primary);
+        }
+
+        .nav-link i {
+            margin-right: 0.5rem;
+        }
+
+        .tab-content {
+            padding: 2rem 1.5rem;
+        }
+
+        .info-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .info-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-header i {
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        .section-header h5 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-label i {
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            padding: 0.65rem 0.875rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+            outline: none;
+        }
+
+        .table-container {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            color: var(--text-primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            border: none;
+            padding: 1rem;
+        }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+            font-weight: 700;
+        }
+
+        .total-row td {
+            border: none !important;
+        }
+
+        .total-row:hover {
+            background: linear-gradient(135deg, #059669 0%, var(--success) 100%);
+        }
+
+        .btn {
+            border-radius: 6px;
+            font-weight: 600;
+            padding: 0.65rem 1.25rem;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #0e7490;
+            transform: translateY(-1px);
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        .preview-card {
+            background: #f8fafc;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .preview-card:hover {
+            background: white;
+            border-color: var(--primary);
+        }
+
+        .preview-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-section h6 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 0.75rem 1rem;
+            font-size: 0.95rem;
+        }
+
+        .preview-grid strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .preview-grid span {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 6px;
+            height: 48px;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .page-footer {
+            text-align: center;
+            padding: 2rem 1rem 1rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .page-footer .copyright {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .page-footer .developer {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.35rem;
+        }
+
+        .info-icon {
+            background: var(--primary-light);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .info-icon:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0;
+        }
+
+        .modal-close-btn {
+            background: var(--gray-100);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            background: var(--gray-200);
+            color: var(--text-primary);
+        }
+
+        .paises-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .paises-group h4 {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 0.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .paises-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .paises-list span {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            padding: 0.35rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .paises-list span:hover {
+            background: #f8fafc;
+            color: var(--primary);
+            padding-left: 0.75rem;
+        }
+
+        #search-paises {
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .btn-header {
+                font-size: 0.75rem;
+                padding: 0.45rem 0.85rem;
+            }
+
+            .dolar-info {
+                padding: 0.65rem 0.85rem;
+            }
+
+            .dolar-info .value {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .gov-header .container-fluid {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .gov-logo-img {
+                height: 70px;
+            }
+
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .btn-header {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .dolar-info {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .tab-content {
+                padding: 1.5rem 1rem;
+            }
+
+            .preview-grid {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .paises-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .system-title {
+                font-size: 1.1rem;
+            }
+
+            .system-subtitle {
+                font-size: 0.8rem;
+            }
+
+            .btn-header {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.75rem;
+            }
+            
+            .dolar-info .label {
+                font-size: 0.7rem;
+            }
+
+            .dolar-info .value {
+                font-size: 1rem;
+            }
+
+            .status-indicator {
+                font-size: 0.65rem;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .main-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
         @media print {
             body * { visibility: hidden; }
-            #preview-to-export, #preview-to-export * { visibility: visible; }
-            #preview-to-export { position: absolute; left: 0; top: 0; width: 100%; border: none !important; padding: 0 !important; background-color: white !important; }
+            #preview-export, #preview-export * { visibility: visible; }
+            #preview-export { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-             <div class="header-content">
-                <div class="logo"><i class="fas fa-globe-americas"></i><div class="logo-text"><h1>Calculadora de Diária</h1><p>Decreto nº 46.611/2019</p></div></div>
-                <div class="header-actions">
-                    <button id="toggle-info-btn" class="action-button" style="background-color: var(--cinza-escuro); font-size: 12px;"><i class="fas fa-user-plus"></i> Adicionar Info. do Viajante</button>
-                    <div class="dolar-info"><div class="label">COTAÇÃO DO DÓLAR</div><div class="value" id="dolar-value">...</div></div>
-                </div>
+    <div class="gov-header">
+        <div class="container-fluid">
+            <img src="https://raw.githubusercontent.com/GabrielFelizardo/almoxarifado-sistema/main/logo.png" 
+                 alt="Logo SEDEICS" 
+                 class="gov-logo-img">
+            <div style="flex: 1; text-align: center;">
+                <h1 class="system-title">Calculadora de Diária</h1>
+                <p class="system-subtitle">Decreto nº 46.611/2019</p>
             </div>
-        </div>
-        <div class="card" id="info-solicitacao-card" style="display: none;">
-            <div class="card-header"><i class="fas fa-user-edit"></i>Informações da Solicitação</div>
-            <div class="card-body">
-                 <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
-                    <div class="form-group"><label for="simulador-nome">Calculado por:</label><input type="text" id="simulador-nome"></div>
-                    <div class="form-group"><label for="viajante-nome">Nome do Viajante:</label><input type="text" id="viajante-nome"></div>
-                    <div class="form-group"><label for="viajante-id">ID Funcional / Matrícula:</label><input type="text" id="viajante-id"></div>
-                </div>
-                <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
-                     <div class="form-group"><label for="viajante-banco">Banco:</label><input type="text" id="viajante-banco"></div>
-                    <div class="form-group"><label for="viajante-agencia">Agência:</label><input type="text" id="viajante-agencia"></div>
-                    <div class="form-group"><label for="viajante-conta">Conta Corrente:</label><input type="text" id="viajante-conta"></div>
-                </div>
-            </div>
-        </div>
-        <div class="tabs">
-            <div class="tab active" onclick="openTab('nacional')">Viagem Nacional</div>
-            <div class="tab" onclick="openTab('internacional')">Viagem Internacional</div>
-        </div>
-        <div id="nacional" class="tab-content active">
-             <div class="card"><div class="card-body" id="calculator-nac-body"><div class="loading-spinner"></div></div></div>
-        </div>
-        <div id="internacional" class="tab-content">
-             <div class="card"><div class="card-body" id="calculator-int-body"><div class="loading-spinner"></div></div></div>
-        </div>
-        <div class="card">
-            <div class="card-header"><i class="fas fa-eye"></i>Pré-Visualização do Relatório</div>
-            <div class="card-body">
-                <div class="preview-block" id="preview-to-export">
-                    <div id="preview-dados-viajante" style="display:none;">
-                        <h4>Dados do Viajante</h4>
-                        <div class="preview-grid">
-                            <strong>Calculado por:</strong> <span id="preview-simulador-nome"></span>
-                            <strong>Nome do Viajante:</strong> <span id="preview-viajante-nome"></span>
-                            <strong>ID Funcional:</strong> <span id="preview-viajante-id"></span>
-                            <strong>Dados Bancários:</strong> <span id="preview-dados-bancarios"></span>
-                        </div>
+            <div class="header-actions">
+                <button class="btn btn-header btn-header-toggle" onclick="toggleInfoViajante()">
+                    <i class="fas fa-user-plus"></i> <span id="btn-header-text">Adicionar Info. Viajante</span>
+                </button>
+                <div class="dolar-info">
+                    <div class="label">Cotação USD</div>
+                    <div class="value" id="dolar-value">R$ ...</div>
+                    <div class="status-indicator">
+                        <i class="fas fa-circle" id="dolar-icon"></i>
+                        <span id="dolar-status">Carregando...</span>
                     </div>
-                    <h4>Parâmetros do Cálculo</h4>
-                    <div class="preview-grid">
-                        <strong>Tipo de Viagem:</strong> <span id="preview-tipo-viagem"></span>
-                        <strong>Grupo:</strong> <span id="preview-grupo"></span>
-                        <strong>Localidade:</strong> <span id="preview-localidade"></span>
-                        <strong id="label-cotacao">Cotação do Dólar:</strong> <span id="preview-cotacao"></span>
-                        <strong id="label-data-calculo">Data do Cálculo:</strong> <span id="preview-data-calculo"></span>
-                    </div>
-                    <h4>Detalhamento dos Custos</h4>
-                    <div class="preview-grid">
-                        <strong id="label-alimentacao">Total Alimentação:</strong> <span id="preview-total-alimentacao"></span>
-                        <strong id="label-pousada">Total Pousada:</strong> <span id="preview-total-pousada"></span>
-                        <strong id="label-diaria-int">Diária Completa:</strong> <span id="preview-total-diaria-int"></span>
-                        <strong>Total Translado:</strong> <span id="preview-total-translado"></span>
-                        <strong>VALOR TOTAL GERAL:</strong> <span id="preview-total-geral" style="font-size: 16px;"></span>
-                    </div>
-                </div>
-                <div class="actions-container">
-                    <button class="action-button" onclick="imprimirPreview()" style="background-color: var(--azul-claro);"><i class="fas fa-print"></i> Imprimir / Salvar PDF</button>
-                    <button class="action-button" onclick="gerarTXT()" style="background-color: var(--laranja); margin-left:10px;"><i class="fas fa-file-alt"></i> Gerar TXT</button>
                 </div>
             </div>
         </div>
     </div>
-    
-    <footer>
-        Desenvolvido por: Gabriel Felizardo da Silva
-    </footer>
 
-    <div id="paises-modal-container"></div>
+    <div class="main-container">
+        <div class="info-card" id="info-viajante-card" style="display: none;">
+            <div class="section-header">
+                <i class="fas fa-user-circle"></i>
+                <h5>Informações do Viajante</h5>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label"><i class="fas fa-calculator"></i> Calculado por</label>
+                    <input type="text" class="form-control" id="calculador-nome" placeholder="Seu nome">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><i class="fas fa-user"></i> Nome do Viajante</label>
+                    <input type="text" class="form-control" id="viajante-nome" placeholder="Nome completo">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><i class="fas fa-id-badge"></i> ID Funcional</label>
+                    <input type="text" class="form-control" id="viajante-id" placeholder="Matrícula">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><i class="fas fa-university"></i> Banco</label>
+                    <input type="text" class="form-control" id="viajante-banco" placeholder="Nome do banco">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><i class="fas fa-building"></i> Agência</label>
+                    <input type="text" class="form-control" id="viajante-agencia" placeholder="Número">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><i class="fas fa-wallet"></i> Conta Corrente</label>
+                    <input type="text" class="form-control" id="viajante-conta" placeholder="Número">
+                </div>
+            </div>
+        </div>
 
+        <div class="main-card">
+            <ul class="nav nav-tabs" id="viagemTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="nacional-tab" data-bs-toggle="tab" data-bs-target="#nacional" type="button">
+                        <i class="fas fa-map-marked-alt"></i> Viagem Nacional
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="internacional-tab" data-bs-toggle="tab" data-bs-target="#internacional" type="button">
+                        <i class="fas fa-globe"></i> Viagem Internacional
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="nacional" role="tabpanel">
+                    <div class="loading-skeleton"></div>
+                    <div id="calculadora-nacional" style="display: none;">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-edit"></i>
+                                        <h5>Dados da Viagem</h5>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-users"></i> Grupo do Servidor</label>
+                                        <select class="form-select" id="grupo-nac">
+                                            <option value="">Selecione...</option>
+                                            <option value="I">Grupo I</option>
+                                            <option value="II">Grupo II</option>
+                                            <option value="III">Grupo III</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-map-marker-alt"></i> Destino</label>
+                                        <select class="form-select" id="cidade-nac">
+                                            <option value="">Selecione...</option>
+                                            <option value="BrasiliaManaus">Brasília e Manaus</option>
+                                            <optgroup label="Capitais Principais">
+                                                <option value="Capitais">Belém, Belo Horizonte, Fortaleza, Porto Alegre, Recife, Salvador, São Paulo</option>
+                                            </optgroup>
+                                            <option value="Demais">Demais Capitais e Cidades com +200k hab</option>
+                                            <option value="Outras">Outras Cidades</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-utensils"></i> Diárias (Alimentação)</label>
+                                        <input type="number" class="form-control" id="diarias-nac" min="0" value="0">
+                                        <small class="help-text">Número de dias com auxílio alimentação</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-bed"></i> Pernoites (Pousada)</label>
+                                        <input type="number" class="form-control" id="pernoites-nac" min="0" value="0">
+                                        <small class="help-text">Número de noites de hospedagem</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-car"></i> Translados</label>
+                                        <input type="number" class="form-control" id="translados-nac" min="0" value="0">
+                                        <small class="help-text">Número de deslocamentos</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-calculator"></i>
+                                        <h5>Resultado do Cálculo</h5>
+                                    </div>
+                                    <div class="table-container">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th>Valor Unit.</th>
+                                                    <th>Qtd</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><i class="fas fa-utensils" style="color: var(--warning); margin-right: 0.5rem;"></i>Alimentação</td>
+                                                    <td id="val-alim-nac">R$ 0,00</td>
+                                                    <td id="qtd-alim-nac">0</td>
+                                                    <td id="tot-alim-nac">R$ 0,00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><i class="fas fa-bed" style="color: var(--info); margin-right: 0.5rem;"></i>Pousada</td>
+                                                    <td id="val-pous-nac">R$ 0,00</td>
+                                                    <td id="qtd-pous-nac">0</td>
+                                                    <td id="tot-pous-nac">R$ 0,00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><i class="fas fa-car" style="color: var(--primary); margin-right: 0.5rem;"></i>Translado</td>
+                                                    <td id="val-trans-nac">R$ 44,00</td>
+                                                    <td id="qtd-trans-nac">0</td>
+                                                    <td id="tot-trans-nac">R$ 0,00</td>
+                                                </tr>
+                                                <tr class="total-row">
+                                                    <td colspan="3"><strong><i class="fas fa-dollar-sign" style="margin-right: 0.5rem;"></i>TOTAL GERAL</strong></td>
+                                                    <td id="total-geral-nac" style="font-size: 1.1rem;">R$ 0,00</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="internacional" role="tabpanel">
+                    <div class="loading-skeleton" id="loading-internacional"></div>
+                    <div id="calculadora-internacional" style="display: none;">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-edit"></i>
+                                        <h5>Dados da Viagem</h5>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-users"></i> Grupo do Servidor</label>
+                                        <select class="form-select" id="grupo-int">
+                                            <option value="">Selecione...</option>
+                                            <option value="I">Grupo I</option>
+                                            <option value="II">Grupo II</option>
+                                            <option value="III">Grupo III</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-globe-americas"></i> Grupo de Países
+                                            <i class="fas fa-info-circle info-icon" onclick="abrirModalPaises()" title="Ver lista de países"></i>
+                                        </label>
+                                        <select class="form-select" id="pais-grupo-int">
+                                            <option value="">Selecione...</option>
+                                            <option value="grupoA">Grupo A</option>
+                                            <option value="grupoB">Grupo B</option>
+                                            <option value="grupoC">Grupo C</option>
+                                            <option value="grupoD">Grupo D</option>
+                                        </select>
+                                        <small class="help-text">Clique no ícone (i) para ver a lista completa de países</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-calendar-day"></i> Diárias Completas</label>
+                                        <input type="number" class="form-control" id="diarias-int" min="0" value="0">
+                                        <small class="help-text">Dias completos (alimentação + hospedagem)</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-car"></i> Translados</label>
+                                        <input type="number" class="form-control" id="translados-int" min="0" value="0">
+                                        <small class="help-text">Número de deslocamentos internos</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <div class="section-header">
+                                        <i class="fas fa-calculator"></i>
+                                        <h5>Resultado do Cálculo</h5>
+                                    </div>
+                                    <div class="table-container">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th>Valor Unit.</th>
+                                                    <th>Qtd</th>
+                                                    <th>Total (BRL)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><i class="fas fa-globe" style="color: var(--success); margin-right: 0.5rem;"></i>Diária Completa</td>
+                                                    <td id="val-diaria-int">$ 0,00</td>
+                                                    <td id="qtd-diaria-int">0</td>
+                                                    <td id="tot-diaria-int">R$ 0,00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><i class="fas fa-car" style="color: var(--primary); margin-right: 0.5rem;"></i>Translado</td>
+                                                    <td id="val-trans-int">R$ 44,90</td>
+                                                    <td id="qtd-trans-int">0</td>
+                                                    <td id="tot-trans-int">R$ 0,00</td>
+                                                </tr>
+                                                <tr class="total-row">
+                                                    <td colspan="3"><strong><i class="fas fa-dollar-sign" style="margin-right: 0.5rem;"></i>TOTAL GERAL</strong></td>
+                                                    <td id="total-geral-int" style="font-size: 1.1rem;">R$ 0,00</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div style="margin-top: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 6px; border-left: 4px solid var(--primary);">
+                                        <small style="color: var(--text-secondary);">
+                                            <i class="fas fa-clock"></i>
+                                            <strong>Cálculo:</strong> <span id="timestamp-int">--</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-card">
+            <div class="tab-content">
+                <div class="section-header" style="margin: 0 0 1.5rem 0;">
+                    <i class="fas fa-eye"></i>
+                    <h5>Pré-Visualização do Relatório</h5>
+                </div>
+                <div class="preview-card" id="preview-export">
+                    <div id="preview-viajante" style="display: none;" class="preview-section">
+                        <h6><i class="fas fa-user"></i> Dados do Viajante</h6>
+                        <div class="preview-grid">
+                            <strong>Calculado por:</strong><span id="prev-calculador">...</span>
+                            <strong>Nome do Viajante:</strong><span id="prev-viajante">...</span>
+                            <strong>ID Funcional:</strong><span id="prev-id">...</span>
+                            <strong>Dados Bancários:</strong><span id="prev-banco">...</span>
+                        </div>
+                    </div>
+                    <div class="preview-section">
+                        <h6><i class="fas fa-cog"></i> Parâmetros do Cálculo</h6>
+                        <div class="preview-grid">
+                            <strong>Tipo de Viagem:</strong><span id="prev-tipo">...</span>
+                            <strong>Grupo:</strong><span id="prev-grupo">...</span>
+                            <strong>Localidade:</strong><span id="prev-local">...</span>
+                            <strong id="lbl-cotacao" style="display:none;">Cotação do Dólar:</strong><span id="prev-cotacao" style="display:none;">...</span>
+                            <strong id="lbl-fonte" style="display:none;">Fonte da Cotação:</strong><span id="prev-fonte" style="display:none;">AwesomeAPI</span>
+                            <strong id="lbl-data" style="display:none;">Data do Cálculo:</strong><span id="prev-data" style="display:none;">...</span>
+                        </div>
+                    </div>
+                    <div class="preview-section">
+                        <h6><i class="fas fa-receipt"></i> Detalhamento dos Custos</h6>
+                        <div class="preview-grid">
+                            <strong id="lbl-alim">Total Alimentação:</strong><span id="prev-alim">...</span>
+                            <strong id="lbl-pous">Total Pousada:</strong><span id="prev-pous">...</span>
+                            <strong id="lbl-diaria-int">Diária Completa:</strong><span id="prev-diaria-int">...</span>
+                            <strong>Total Translado:</strong><span id="prev-trans">...</span>
+                            <strong style="font-size: 1.1rem;">VALOR TOTAL GERAL:</strong><span id="prev-total" style="font-size: 1.2rem; color: var(--success);">...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 justify-content-end mt-3">
+                    <button class="btn btn-info" onclick="gerarTXT()">
+                        <i class="fas fa-file-alt"></i> Exportar TXT
+                    </button>
+                    <button class="btn btn-primary" onclick="gerarPDF()">
+                        <i class="fas fa-file-pdf"></i> Gerar PDF
+                    </button>
+                    <button class="btn btn-success" onclick="window.print()">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-footer">
+            <p class="copyright">
+                © 2025 SEDEICS - Secretaria de Desenvolvimento Econômico, Indústria, Comércio e Serviços
+            </p>
+            <p class="developer">
+                Desenvolvido por Gabriel Felizardo da Silva
+            </p>
+        </div>
+    </div>
+
+    <!-- Modal de Países -->
+    <div class="modal-overlay" id="paises-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2><i class="fas fa-globe"></i> Classificação dos Países por Grupos</h2>
+                <button type="button" class="modal-close-btn" onclick="fecharModalPaises()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="search" class="form-control" id="search-paises" placeholder="🔍 Pesquisar país...">
+                <div class="paises-grid">
+                    <div class="paises-group">
+                        <h4><i class="fas fa-circle" style="color: var(--success);"></i> Grupo A</h4>
+                        <div class="paises-list">
+                            <span>Afeganistão</span>
+                            <span>Armênia</span>
+                            <span>Bangladesh</span>
+                            <span>Belarus</span>
+                            <span>Bolívia</span>
+                            <span>Benin</span>
+                            <span>Burkina-Fasso</span>
+                            <span>Butão</span>
+                            <span>Comores</span>
+                            <span>República Popular Democrática da Coréia</span>
+                            <span>Costa Rica</span>
+                            <span>El Salvador</span>
+                            <span>Equador</span>
+                            <span>Eslovênia</span>
+                            <span>Filipinas</span>
+                            <span>Gâmbia</span>
+                            <span>Guiana</span>
+                            <span>Guiné Bissau</span>
+                            <span>Guiné</span>
+                            <span>Honduras</span>
+                            <span>Indonésia</span>
+                            <span>Irã</span>
+                            <span>Iraque</span>
+                            <span>Laos</span>
+                            <span>Líbano</span>
+                            <span>Malásia</span>
+                            <span>Maldivas</span>
+                            <span>Marrocos</span>
+                            <span>Mongólia</span>
+                            <span>Myanmar</span>
+                            <span>Namíbia</span>
+                            <span>Nauru</span>
+                            <span>Nepal</span>
+                            <span>Nicarágua</span>
+                            <span>Panamá</span>
+                            <span>Paraguai</span>
+                            <span>Rep. Centro Africana</span>
+                            <span>República Togolesa</span>
+                            <span>Salomão</span>
+                            <span>Samoa</span>
+                            <span>Seychelles</span>
+                            <span>Serra Leoa</span>
+                            <span>Síria</span>
+                            <span>Somália</span>
+                            <span>Sri Lanka</span>
+                            <span>Suazilândia</span>
+                            <span>Suriname</span>
+                            <span>Tadjiquistão</span>
+                            <span>Tailândia</span>
+                            <span>Timor Leste</span>
+                            <span>Tonga</span>
+                            <span>Tunísia</span>
+                            <span>Turcomenistão</span>
+                            <span>Turquia</span>
+                            <span>Tuvalu</span>
+                            <span>Vanuatu</span>
+                            <span>Vietnã</span>
+                            <span>Zimbábue</span>
+                        </div>
+                    </div>
+                    <div class="paises-group">
+                        <h4><i class="fas fa-circle" style="color: var(--warning);"></i> Grupo B</h4>
+                        <div class="paises-list">
+                            <span>África do Sul</span>
+                            <span>Albânia</span>
+                            <span>Andorra</span>
+                            <span>Argélia</span>
+                            <span>Austrália</span>
+                            <span>Barbados</span>
+                            <span>Belize</span>
+                            <span>Bósnia-Herzegovina</span>
+                            <span>Burundi</span>
+                            <span>Cabo Verde</span>
+                            <span>Camarões</span>
+                            <span>Camboja</span>
+                            <span>Chade</span>
+                            <span>Chipre</span>
+                            <span>Colômbia</span>
+                            <span>Dominica</span>
+                            <span>Egito</span>
+                            <span>Eritréia</span>
+                            <span>Etiópia</span>
+                            <span>Gana</span>
+                            <span>Geórgia</span>
+                            <span>Granada</span>
+                            <span>Guiné-Equatorial</span>
+                            <span>Haiti</span>
+                            <span>Hungria</span>
+                            <span>lêmen</span>
+                            <span>Ilhas Marshall</span>
+                            <span>Índia</span>
+                            <span>Kiribati</span>
+                            <span>Kuwait</span>
+                            <span>Lesoto</span>
+                            <span>Líbia</span>
+                            <span>Macedônia</span>
+                            <span>Madagascar</span>
+                            <span>Malauí</span>
+                            <span>Micronésia</span>
+                            <span>Moçambique</span>
+                            <span>Moldávia</span>
+                            <span>Níger</span>
+                            <span>Nigéria</span>
+                            <span>Nova Zelândia</span>
+                            <span>Palau</span>
+                            <span>Papua Nova Guiné</span>
+                            <span>Paquistão</span>
+                            <span>Polônia</span>
+                            <span>Quênia</span>
+                            <span>República Dominicana</span>
+                            <span>República Eslovaca</span>
+                            <span>Romênia</span>
+                            <span>Ruanda</span>
+                            <span>São Tomé e Príncipe</span>
+                            <span>Senegal</span>
+                            <span>Sudão</span>
+                            <span>Tanzânia</span>
+                            <span>Uruguai</span>
+                            <span>Uzbequistão</span>
+                            <span>Venezuela</span>
+                        </div>
+                    </div>
+                    <div class="paises-group">
+                        <h4><i class="fas fa-circle" style="color: var(--accent);"></i> Grupo C</h4>
+                        <div class="paises-list">
+                            <span>Antígua e Barbuda</span>
+                            <span>Arábia Saudita</span>
+                            <span>Argentina</span>
+                            <span>Azerbaijão</span>
+                            <span>Bahamas</span>
+                            <span>Bahrein</span>
+                            <span>Brunei Darussalam</span>
+                            <span>Botswana</span>
+                            <span>Bulgária</span>
+                            <span>Canadá</span>
+                            <span>Chile</span>
+                            <span>Cingapura</span>
+                            <span>Congo</span>
+                            <span>Costa do Marfim</span>
+                            <span>Cuba</span>
+                            <span>Djibuti</span>
+                            <span>Fiji</span>
+                            <span>Gabão</span>
+                            <span>Guatemala</span>
+                            <span>Jamaica</span>
+                            <span>Jordânia</span>
+                            <span>Letônia</span>
+                            <span>Libéria</span>
+                            <span>Lituânia</span>
+                            <span>Mali</span>
+                            <span>Malta</span>
+                            <span>Maurício</span>
+                            <span>Mauritânia</span>
+                            <span>México</span>
+                            <span>Peru</span>
+                            <span>República Democrática do Congo</span>
+                            <span>República Tcheca</span>
+                            <span>Rússia</span>
+                            <span>San Marino</span>
+                            <span>Santa Lúcia</span>
+                            <span>São Cristóvão e Névis</span>
+                            <span>São Vicente e Granadinas</span>
+                            <span>Taiwan</span>
+                            <span>Trinidad e Tobago</span>
+                            <span>Ucrânia</span>
+                            <span>Uganda</span>
+                            <span>Zâmbia</span>
+                        </div>
+                    </div>
+                    <div class="paises-group">
+                        <h4><i class="fas fa-circle" style="color: var(--danger);"></i> Grupo D</h4>
+                        <div class="paises-list">
+                            <span>Alemanha</span>
+                            <span>Angola</span>
+                            <span>Áustria</span>
+                            <span>Bélgica</span>
+                            <span>Catar</span>
+                            <span>Cazaquistão</span>
+                            <span>China</span>
+                            <span>Coréia do Sul</span>
+                            <span>Croácia</span>
+                            <span>Dinamarca</span>
+                            <span>Emirados Árabes</span>
+                            <span>Espanha</span>
+                            <span>Estados Unidos da América</span>
+                            <span>Estônia</span>
+                            <span>Finlândia</span>
+                            <span>França</span>
+                            <span>Grécia</span>
+                            <span>Hong Kong</span>
+                            <span>Irlanda</span>
+                            <span>Islândia</span>
+                            <span>Israel</span>
+                            <span>Itália</span>
+                            <span>Japão</span>
+                            <span>Liechtenstein</span>
+                            <span>Luxemburgo</span>
+                            <span>Mônaco</span>
+                            <span>Montenegro</span>
+                            <span>Noruega</span>
+                            <span>Omã</span>
+                            <span>Países Baixos</span>
+                            <span>Portugal</span>
+                            <span>Reino Unido</span>
+                            <span>República Quirguiz</span>
+                            <span>Sérvia</span>
+                            <span>Suécia</span>
+                            <span>Suíça</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwaqI-FnI29vTMwYXxQeTViw1F-YPsl4yo1C9_9tAJDYkjuCy-dbQ_Z425ceJvdoJ8uwg/exec";
         let dolarRate = 5.50;
         let valoresNacionais = {}, valoresInternacionais = {}, configValores = {};
         let timestampCalculo = '';
-        
-        async function carregarTodosOsValores() {
-            document.body.style.cursor = 'wait';
+
+        function formatCurrency(value) {
+            return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatNumber(value) {
+            return parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        async function carregarDados() {
             try {
                 const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('Falha na resposta da rede.');
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
                 valoresNacionais = data.nacional || {};
                 valoresInternacionais = data.internacional || {};
                 configValores = data.config || {};
+                
+                document.querySelector('#nacional .loading-skeleton').style.display = 'none';
+                document.getElementById('calculadora-nacional').style.display = 'block';
+                
+                document.getElementById('loading-internacional').style.display = 'none';
+                document.getElementById('calculadora-internacional').style.display = 'block';
             } catch (error) {
-                console.error("Erro ao carregar dados da planilha:", error);
-                alert(`Não foi possível carregar os valores da planilha. A aplicação pode não funcionar corretamente.\nErro: ${error.message}`);
-            } finally {
-                document.body.style.cursor = 'default';
+                console.error('Erro ao carregar dados:', error);
             }
         }
 
-        function openTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            atualizarPreview();
-        }
-
-        // <-- INÍCIO DA ALTERAÇÃO DA API
-        async function fetchDolarRate() {
+        async function atualizarDolar() {
             try {
-                const r = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
-                if (!r.ok) throw new Error('Falha na resposta da rede.');
-                const d = await r.json();
-                dolarRate = parseFloat(d.USDBRL.bid);
-                document.getElementById('dolar-value').textContent = `R$ ${dolarRate.toFixed(2)}`;
-                if(document.getElementById('internacional').classList.contains('active')) {
-                    calcularValoresInternacionais();
+                document.getElementById('dolar-status').textContent = 'Atualizando...';
+                document.getElementById('dolar-icon').style.color = '#f59e0b';
+                
+                const response = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
+                const data = await response.json();
+                dolarRate = parseFloat(data.USDBRL.bid);
+                document.getElementById('dolar-value').textContent = formatCurrency(dolarRate);
+                
+                document.getElementById('dolar-status').textContent = 'Atualizado';
+                document.getElementById('dolar-icon').style.color = '#10b981';
+                
+                if (document.getElementById('internacional').classList.contains('active')) {
+                    calcularInternacional();
                 }
-            } catch (e) {
-                console.error("Erro ao buscar cotação do dólar:", e);
+            } catch (error) {
+                console.error('Erro ao buscar dólar:', error);
                 document.getElementById('dolar-value').textContent = 'Erro';
+                document.getElementById('dolar-status').textContent = 'Erro';
+                document.getElementById('dolar-icon').style.color = '#ef4444';
             }
         }
-        // <-- FIM DA ALTERAÇÃO DA API
-        
-        async function fetchHoraAtual() {
+
+        async function buscarTimestamp() {
             try {
                 const response = await fetch('https://worldtimeapi.org/api/ip');
-                if (!response.ok) throw new Error('API de hora falhou.');
                 const data = await response.json();
-                const dataHora = new Date(data.datetime);
-                timestampCalculo = dataHora.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
-            } catch (e) {
-                console.error("Erro ao buscar hora da API:", e);
-                timestampCalculo = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' }) + " (horário do sistema)";
+                timestampCalculo = new Date(data.datetime).toLocaleString('pt-BR');
+            } catch (error) {
+                timestampCalculo = new Date().toLocaleString('pt-BR') + ' (sistema)';
             }
         }
 
-        function calcularValoresNacionais() {
-            if (!document.getElementById('grupo')) return; 
-            const g = document.getElementById('grupo').value, c = document.getElementById('cidade').value;
-            const d = parseInt(document.getElementById('diarias').value) || 0, p = parseInt(document.getElementById('pernoites').value) || 0, t = parseInt(document.getElementById('translados').value) || 0;
-            let vA = 0, vP = 0;
-            const vT = configValores.translado_nacional || 44.00;
-            if (g && c && valoresNacionais[c] && valoresNacionais[c][g]) { vA = valoresNacionais[c][g].alimentacao; vP = valoresNacionais[c][g].pousada; }
-            const tA = d * vA, tP = p * vP, tT = t * vT, tG = tA + tP + tT;
-            const f = (n, c = '') => `${c}${n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('qtd-alimentacao').textContent = d;
-            document.getElementById('qtd-pousada').textContent = p;
-            document.getElementById('qtd-translado').textContent = t;
-            document.getElementById('val-alimentacao').textContent = f(vA, 'R$ ');
-            document.getElementById('val-pousada').textContent = f(vP, 'R$ ');
-            document.getElementById('val-translado').textContent = f(vT, 'R$ ');
-            document.getElementById('total-alimentacao').textContent = f(tA, 'R$ ');
-            document.getElementById('total-pousada').textContent = f(tP, 'R$ ');
-            document.getElementById('total-translado').textContent = f(tT, 'R$ ');
-            document.getElementById('total-geral').textContent = f(tG, 'R$ ');
+        function calcularNacional() {
+            const grupo = document.getElementById('grupo-nac').value;
+            const cidade = document.getElementById('cidade-nac').value;
+            const diarias = parseInt(document.getElementById('diarias-nac').value) || 0;
+            const pernoites = parseInt(document.getElementById('pernoites-nac').value) || 0;
+            const translados = parseInt(document.getElementById('translados-nac').value) || 0;
+
+            let vAlim = 0, vPous = 0;
+            const vTrans = configValores.translado_nacional || 44.00;
+
+            if (grupo && cidade && valoresNacionais[cidade] && valoresNacionais[cidade][grupo]) {
+                vAlim = valoresNacionais[cidade][grupo].alimentacao;
+                vPous = valoresNacionais[cidade][grupo].pousada;
+            }
+
+            const tAlim = diarias * vAlim;
+            const tPous = pernoites * vPous;
+            const tTrans = translados * vTrans;
+            const tGeral = tAlim + tPous + tTrans;
+
+            document.getElementById('val-alim-nac').textContent = formatCurrency(vAlim);
+            document.getElementById('qtd-alim-nac').textContent = diarias;
+            document.getElementById('tot-alim-nac').textContent = formatCurrency(tAlim);
+            
+            document.getElementById('val-pous-nac').textContent = formatCurrency(vPous);
+            document.getElementById('qtd-pous-nac').textContent = pernoites;
+            document.getElementById('tot-pous-nac').textContent = formatCurrency(tPous);
+            
+            document.getElementById('val-trans-nac').textContent = formatCurrency(vTrans);
+            document.getElementById('qtd-trans-nac').textContent = translados;
+            document.getElementById('tot-trans-nac').textContent = formatCurrency(tTrans);
+            
+            document.getElementById('total-geral-nac').textContent = formatCurrency(tGeral);
+
             atualizarPreview();
         }
-        
-        async function calcularValoresInternacionais() {
-            if (!document.getElementById('grupo-internacional')) return; 
-            await fetchHoraAtual(); 
-            const g = document.getElementById('grupo-internacional').value, pg = document.getElementById('pais-grupo').value;
-            const d = parseInt(document.getElementById('diarias-completas-int').value) || 0;
-            const t = parseInt(document.getElementById('translados-int').value) || 0;
+
+        async function calcularInternacional() {
+            await buscarTimestamp();
+            
+            const grupo = document.getElementById('grupo-int').value;
+            const paisGrupo = document.getElementById('pais-grupo-int').value;
+            const diarias = parseInt(document.getElementById('diarias-int').value) || 0;
+            const translados = parseInt(document.getElementById('translados-int').value) || 0;
+
             let vDiariaUSD = 0;
-            const vT_BRL = configValores.translado_internacional || 44.90;
-            if (g && pg && valoresInternacionais[pg] && valoresInternacionais[pg][g]) { vDiariaUSD = valoresInternacionais[pg][g].diaria; }
-            const tDiaria_BRL = (d * vDiariaUSD) * dolarRate;
-            const tT_BRL = t * vT_BRL;
-            const tG_BRL = tDiaria_BRL + tT_BRL;
-            const f = (n, c = '') => `${c}${n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('val-diaria-usd').textContent = f(vDiariaUSD, '$ ');
-            document.getElementById('qtd-diaria-int').textContent = d;
-            document.getElementById('total-diaria-int-brl').textContent = f(tDiaria_BRL, 'R$ ');
-            document.getElementById('val-translado-int').textContent = f(vT_BRL, 'R$ ');
-            document.getElementById('qtd-translado-int').textContent = t;
-            document.getElementById('total-translado-int-tbl').textContent = f(tT_BRL, 'R$ ');
-            document.getElementById('total-geral-int-tbl').textContent = f(tG_BRL, 'R$ ');
+            const vTransBRL = configValores.translado_internacional || 44.90;
+
+            if (grupo && paisGrupo && valoresInternacionais[paisGrupo] && valoresInternacionais[paisGrupo][grupo]) {
+                vDiariaUSD = valoresInternacionais[paisGrupo][grupo].diaria;
+            }
+
+            const tDiariaBRL = (diarias * vDiariaUSD) * dolarRate;
+            const tTransBRL = translados * vTransBRL;
+            const tGeralBRL = tDiariaBRL + tTransBRL;
+
+            document.getElementById('val-diaria-int').textContent = `$ ${formatNumber(vDiariaUSD)}`;
+            document.getElementById('qtd-diaria-int').textContent = diarias;
+            document.getElementById('tot-diaria-int').textContent = formatCurrency(tDiariaBRL);
+            
+            document.getElementById('val-trans-int').textContent = formatCurrency(vTransBRL);
+            document.getElementById('qtd-trans-int').textContent = translados;
+            document.getElementById('tot-trans-int').textContent = formatCurrency(tTransBRL);
+            
+            document.getElementById('total-geral-int').textContent = formatCurrency(tGeralBRL);
             document.getElementById('timestamp-int').textContent = timestampCalculo;
+
             atualizarPreview();
         }
 
         function atualizarPreview() {
-            const infoCard = document.getElementById('info-solicitacao-card');
-            const previewDadosViajante = document.getElementById('preview-dados-viajante');
-            if (infoCard.style.display !== 'none') {
-                previewDadosViajante.style.display = 'block';
-                document.getElementById('preview-simulador-nome').textContent = document.getElementById('simulador-nome').value || '...';
-                document.getElementById('preview-viajante-nome').textContent = document.getElementById('viajante-nome').value || '...';
-                document.getElementById('preview-viajante-id').textContent = document.getElementById('viajante-id').value || '...';
-                const banco = document.getElementById('viajante-banco').value;
-                const agencia = document.getElementById('viajante-agencia').value;
-                const conta = document.getElementById('viajante-conta').value;
-                document.getElementById('preview-dados-bancarios').textContent = (banco || agencia || conta) ? `${banco} | Ag: ${agencia} | CC: ${conta}` : '...';
-            } else {
-                previewDadosViajante.style.display = 'none';
-            }
             const isNacional = document.getElementById('nacional').classList.contains('active');
-            document.getElementById('label-alimentacao').style.display = isNacional ? 'block' : 'none';
-            document.getElementById('preview-total-alimentacao').style.display = isNacional ? 'block' : 'none';
-            document.getElementById('label-pousada').style.display = isNacional ? 'block' : 'none';
-            document.getElementById('preview-total-pousada').style.display = isNacional ? 'block' : 'none';
-            document.getElementById('label-diaria-int').style.display = isNacional ? 'none' : 'block';
-            document.getElementById('preview-total-diaria-int').style.display = isNacional ? 'none' : 'block';
-            document.getElementById('label-cotacao').style.display = isNacional ? 'none' : 'block';
-            document.getElementById('preview-cotacao').style.display = isNacional ? 'none' : 'block';
-            document.getElementById('label-data-calculo').style.display = isNacional ? 'none' : 'block';
-            document.getElementById('preview-data-calculo').style.display = isNacional ? 'none' : 'block';
+            
+            // Viajante
+            const infoVisible = document.getElementById('info-viajante-card').style.display !== 'none';
+            document.getElementById('preview-viajante').style.display = infoVisible ? 'block' : 'none';
+            if (infoVisible) {
+                document.getElementById('prev-calculador').textContent = document.getElementById('calculador-nome').value || '...';
+                document.getElementById('prev-viajante').textContent = document.getElementById('viajante-nome').value || '...';
+                document.getElementById('prev-id').textContent = document.getElementById('viajante-id').value || '...';
+                
+                const banco = document.getElementById('viajante-banco').value;
+                const ag = document.getElementById('viajante-agencia').value;
+                const cc = document.getElementById('viajante-conta').value;
+                document.getElementById('prev-banco').textContent = (banco || ag || cc) ? `${banco} | Ag: ${ag} | CC: ${cc}` : '...';
+            }
+
+            // Tipo e dados
+            document.getElementById('prev-tipo').textContent = isNacional ? 'Nacional' : 'Internacional';
+            
             if (isNacional) {
-                if(!document.getElementById('grupo')) return;
-                document.getElementById('preview-tipo-viagem').textContent = 'Nacional';
-                const grupoSelect = document.getElementById('grupo');
-                const cidadeSelect = document.getElementById('cidade');
-                document.getElementById('preview-grupo').textContent = grupoSelect.value ? grupoSelect.options[grupoSelect.selectedIndex].text : '...';
-                document.getElementById('preview-localidade').textContent = cidadeSelect.value ? cidadeSelect.options[cidadeSelect.selectedIndex].text : '...';
-                document.getElementById('preview-total-alimentacao').textContent = document.getElementById('total-alimentacao').textContent;
-                document.getElementById('preview-total-pousada').textContent = document.getElementById('total-pousada').textContent;
-                document.getElementById('preview-total-translado').textContent = document.getElementById('total-translado').textContent;
-                document.getElementById('preview-total-geral').textContent = document.getElementById('total-geral').textContent;
+                const grupoSel = document.getElementById('grupo-nac');
+                const cidadeSel = document.getElementById('cidade-nac');
+                document.getElementById('prev-grupo').textContent = grupoSel.value ? grupoSel.options[grupoSel.selectedIndex].text : '...';
+                document.getElementById('prev-local').textContent = cidadeSel.value ? cidadeSel.options[cidadeSel.selectedIndex].text : '...';
+                
+                document.getElementById('lbl-cotacao').style.display = 'none';
+                document.getElementById('prev-cotacao').style.display = 'none';
+                document.getElementById('lbl-fonte').style.display = 'none';
+                document.getElementById('prev-fonte').style.display = 'none';
+                document.getElementById('lbl-data').style.display = 'none';
+                document.getElementById('prev-data').style.display = 'none';
+                
+                document.getElementById('lbl-alim').style.display = 'block';
+                document.getElementById('prev-alim').style.display = 'block';
+                document.getElementById('prev-alim').textContent = document.getElementById('tot-alim-nac').textContent;
+                
+                document.getElementById('lbl-pous').style.display = 'block';
+                document.getElementById('prev-pous').style.display = 'block';
+                document.getElementById('prev-pous').textContent = document.getElementById('tot-pous-nac').textContent;
+                
+                document.getElementById('lbl-diaria-int').style.display = 'none';
+                document.getElementById('prev-diaria-int').style.display = 'none';
+                
+                document.getElementById('prev-trans').textContent = document.getElementById('tot-trans-nac').textContent;
+                document.getElementById('prev-total').textContent = document.getElementById('total-geral-nac').textContent;
             } else {
-                if(!document.getElementById('grupo-internacional')) return;
-                document.getElementById('preview-tipo-viagem').textContent = 'Internacional';
-                const grupoSelect = document.getElementById('grupo-internacional');
-                const paisSelect = document.getElementById('pais-grupo');
-                document.getElementById('preview-grupo').textContent = grupoSelect.value ? grupoSelect.options[grupoSelect.selectedIndex].text : '...';
-                document.getElementById('preview-localidade').textContent = paisSelect.value ? paisSelect.options[paisSelect.selectedIndex].text : '...';
-                document.getElementById('preview-cotacao').textContent = document.getElementById('dolar-value').textContent;
-                document.getElementById('preview-data-calculo').textContent = timestampCalculo;
-                document.getElementById('preview-total-diaria-int').textContent = document.getElementById('total-diaria-int-brl').textContent;
-                document.getElementById('preview-total-translado').textContent = document.getElementById('total-translado-int-tbl').textContent;
-                document.getElementById('preview-total-geral').textContent = document.getElementById('total-geral-int-tbl').textContent;
+                const grupoSel = document.getElementById('grupo-int');
+                const paisSel = document.getElementById('pais-grupo-int');
+                document.getElementById('prev-grupo').textContent = grupoSel.value ? grupoSel.options[grupoSel.selectedIndex].text : '...';
+                document.getElementById('prev-local').textContent = paisSel.value ? paisSel.options[paisSel.selectedIndex].text : '...';
+                
+                document.getElementById('lbl-cotacao').style.display = 'block';
+                document.getElementById('prev-cotacao').style.display = 'block';
+                document.getElementById('prev-cotacao').textContent = document.getElementById('dolar-value').textContent;
+                
+                document.getElementById('lbl-fonte').style.display = 'block';
+                document.getElementById('prev-fonte').style.display = 'block';
+                
+                document.getElementById('lbl-data').style.display = 'block';
+                document.getElementById('prev-data').style.display = 'block';
+                document.getElementById('prev-data').textContent = timestampCalculo;
+                
+                document.getElementById('lbl-alim').style.display = 'none';
+                document.getElementById('prev-alim').style.display = 'none';
+                
+                document.getElementById('lbl-pous').style.display = 'none';
+                document.getElementById('prev-pous').style.display = 'none';
+                
+                document.getElementById('lbl-diaria-int').style.display = 'block';
+                document.getElementById('prev-diaria-int').style.display = 'block';
+                document.getElementById('prev-diaria-int').textContent = document.getElementById('tot-diaria-int').textContent;
+                
+                document.getElementById('prev-trans').textContent = document.getElementById('tot-trans-int').textContent;
+                document.getElementById('prev-total').textContent = document.getElementById('total-geral-int').textContent;
             }
         }
-        
-        function gerarTXT() {
-            const element = document.getElementById('preview-to-export');
-            const viajanteNome = document.getElementById('viajante-nome').value || 'relatorio';
-            let textContent = `RELATÓRIO DE CÁLCULO DE DIÁRIA\n====================================\n\n`;
-            const sections = element.querySelectorAll('h4');
-            const grids = element.querySelectorAll('.preview-grid');
-            sections.forEach((section, index) => {
-                if (section.parentElement.style.display === 'none') return;
-                textContent += `${section.textContent.toUpperCase()}\n------------------------------------\n`;
-                const items = grids[index].querySelectorAll('strong');
-                const values = grids[index].querySelectorAll('span');
-                items.forEach((item, i) => {
-                    if (item.style.display !== 'none') { textContent += `${item.textContent} ${values[i].textContent}\n`; }
-                });
-                textContent += '\n';
-            });
-            const a = document.createElement('a');
-            const file = new Blob([textContent], {type: 'text/plain;charset=utf-8'});
-            a.href = URL.createObjectURL(file);
-            a.download = `Calculo_Diaria_${viajanteNome.replace(/ /g, '_')}.txt`;
-            a.click();
-            URL.revokeObjectURL(a.href);
-        }
-        function imprimirPreview() { window.print(); }
-        
-        function renderizarCalculadoraNacional() {
-            document.getElementById('calculator-nac-body').innerHTML = `
-                <div class="grid">
-                    <div>
-                        <div class="form-group"><label for="grupo">Grupo</label><select id="grupo"><option value="">Selecione</option><option value="I">Grupo I</option><option value="II">Grupo II</option><option value="III">Grupo III</option></select></div>
-                        <div class="form-group">
-                            <label for="cidade">Cidade</label>
-                            <select id="cidade">
-                                <option value="">Selecione</option>
-                                <option value="BrasiliaManaus">Brasília e Manaus</option>
-                                <optgroup label="Capitais Principais"><option value="Capitais">Belém</option><option value="Capitais">Belo Horizonte</option><option value="Capitais">Fortaleza</option><option value="Capitais">Porto Alegre</option><option value="Capitais">Recife</option><option value="Capitais">Salvador</option><option value="Capitais">São Paulo</option></optgroup>
-                                <option value="Demais">Demais Capitais e Cidades com mais de 200.000 habitantes</option>
-                                <option value="Outras">Outras Cidades</option>
-                            </select>
-                            <span class="help-text">Para capitais não listadas, use "Demais Capitais e Cidades".</span>
-                        </div>
-                        <div class="form-group"><label for="diarias">Diárias (Alimentação)</label><input type="number" id="diarias" min="0" value="0"></div>
-                        <div class="form-group"><label for="pernoites">Pernoites (Pousada)</label><input type="number" id="pernoites" min="0" value="0"></div>
-                        <div class="form-group"><label for="translados">Translados</label><input type="number" id="translados" min="0" value="0"></div>
-                    </div>
-                    <div>
-                        <div class="card-header"><i class="fas fa-chart-bar"></i>Resultados</div>
-                        <table>
-                            <thead><tr><th>Descrição</th><th>Valor Unitário (R$)</th><th>Quantidade</th><th>Total (R$)</th></tr></thead>
-                            <tbody>
-                                <tr><td>Alimentação</td><td id="val-alimentacao">R$ 0,00</td><td id="qtd-alimentacao">0</td><td id="total-alimentacao">R$ 0,00</td></tr>
-                                <tr><td>Pousada</td><td id="val-pousada">R$ 0,00</td><td id="qtd-pousada">0</td><td id="total-pousada">R$ 0,00</td></tr>
-                                <tr><td>Translado</td><td id="val-translado">R$ 44,00</td><td id="qtd-translado">0</td><td id="total-translado">R$ 0,00</td></tr>
-                                <tr class="total-row"><td colspan="3"><strong>Total Geral:</strong></td><td id="total-geral">R$ 0,00</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>`;
-            ['grupo', 'cidade', 'diarias', 'pernoites', 'translados'].forEach(id => document.getElementById(id).addEventListener('input', calcularValoresNacionais));
-        }
-        function renderizarCalculadoraInternacional() {
-            document.getElementById('calculator-int-body').innerHTML = `
-                <div class="grid">
-                    <div>
-                        <div class="form-group"><label for="grupo-internacional">Grupo</label><select id="grupo-internacional"><option value="">Selecione</option><option value="I">Grupo I</option><option value="II">Grupo II</option><option value="III">Grupo III</option></select></div>
-                        <div class="form-group">
-                            <label class="label-with-icon"><span>Grupo de Países</span><i class="fas fa-globe-americas info-icon" id="paises-info-btn" title="Ver lista de países"></i></label>
-                            <select id="pais-grupo"><option value="">Selecione</option><option value="grupoA">Grupo A</option><option value="grupoB">Grupo B</option><option value="grupoC">Grupo C</option><option value="grupoD">Grupo D</option></select>
-                        </div>
-                        <div class="form-group"><label for="diarias-completas-int">Diárias Completas (Alim. + Pousada)</label><input type="number" id="diarias-completas-int" min="0" value="0"></div>
-                        <div class="form-group"><label for="translados-int">Translados</label><input type="number" id="translados-int" min="0" value="0"></div>
-                    </div>
-                    <div>
-                        <div class="card-header"><i class="fas fa-chart-bar"></i>Resultados</div>
-                        <table>
-                            <thead><tr><th>Descrição</th><th>Valor Unitário</th><th>Quantidade</th><th>Total (BRL)</th></tr></thead>
-                            <tbody>
-                                <tr><td>Diária Completa</td><td id="val-diaria-usd">$ 0,00</td><td id="qtd-diaria-int">0</td><td id="total-diaria-int-brl">R$ 0,00</td></tr>
-                                <tr><td>Translado</td><td id="val-translado-int">R$ 44,90</td><td id="qtd-translado-int">0</td><td id="total-translado-int-tbl">R$ 0,00</td></tr>
-                                <tr class="total-row"><td colspan="3"><strong>Total Geral (BRL):</strong></td><td id="total-geral-int-tbl">R$ 0,00</td></tr>
-                            </tbody>
-                        </table>
-                        <p style="font-size:12px; text-align:right; color: #6c757d; margin-top:10px;">Cálculo realizado em: <span id="timestamp-int">--</span></p>
-                    </div>
-                </div>`;
-            ['grupo-internacional', 'pais-grupo', 'diarias-completas-int', 'translados-int'].forEach(id => document.getElementById(id).addEventListener('input', calcularValoresInternacionais));
-        }
-        function renderizarModalPaises() {
-            let html = `<div class="modal-overlay" id="paises-modal"><div class="modal-container">
-                <div class="modal-header"><h2>Grupos de Países</h2><button type="button" class="modal-close-btn">&times;</button></div>
-                <div class="modal-body">
-                    <input type="search" id="search-paises" placeholder="Pesquisar país..." style="margin-bottom: 20px;">
-                    <div class="paises-grid">
-                        <div class="paises-group"><h4>Grupo A</h4><div class="paises-list"><span>Afeganistão</span><span>Armênia</span><span>Bangladesh</span><span>Belarus</span><span>Bolívia</span><span>Benin</span><span>Burkina-Fasso</span><span>Butão</span><span>Comores</span><span>República Popular Democrática da Coréia</span><span>Costa Rica</span><span>El Salvador</span><span>Equador</span><span>Eslovênia</span><span>Filipinas</span><span>Gâmbia</span><span>Guiana</span><span>Guiné Bissau</span><span>Guiné</span><span>Honduras</span><span>Indonésia</span><span>Irã</span><span>Iraque</span><span>Laos</span><span>Líbano</span><span>Malásia</span><span>Maldivas</span><span>Marrocos</span><span>Mongólia</span><span>Myanmar</span><span>Namíbia</span><span>Nauru</span><span>Nepal</span><span>Nicarágua</span><span>Panamá</span><span>Paraguai</span><span>Rep. Centro Africana</span><span>República Togolesa</span><span>Salomão</span><span>Samoa</span><span>Seychelles</span><span>Serra Leoa</span><span>Síria</span><span>Somália</span><span>Sri Lanka</span><span>Suazilândia</span><span>Suriname</span><span>Tadjiquistão</span><span>Tailândia</span><span>Timor Leste</span><span>Tonga</span><span>Tunísia</span><span>Turcomenistão</span><span>Turquia</span><span>Tuvalu</span><span>Vanuatu</span><span>Vietnã</span><span>Zimbábue</span></div></div>
-                        <div class="paises-group"><h4>Grupo B</h4><div class="paises-list"><span>África do Sul</span><span>Albânia</span><span>Andorra</span><span>Argélia</span><span>Austrália</span><span>Barbados</span><span>Belize</span><span>Bósnia-Herzegovina</span><span>Burundi</span><span>Cabo Verde</span><span>Camarões</span><span>Camboja</span><span>Chade</span><span>Chipre</span><span>Colômbia</span><span>Dominica</span><span>Egito</span><span>Eritréia</span><span>Etiópia</span><span>Gana</span><span>Geórgia</span><span>Granada</span><span>Guiné-Equatorial</span><span>Haiti</span><span>Hungria</span><span>lêmen</span><span>Ilhas Marshall</span><span>Índia</span><span>Kiribati</span><span>Kuwait</span><span>Lesoto</span><span>Líbia</span><span>Macedônia</span><span>Madagascar</span><span>Malauí</span><span>Micronésia</span><span>Moçambique</span><span>Moldávia</span><span>Níger</span><span>Nigéria</span><span>Nova Zelândia</span><span>Palau</span><span>Papua Nova Guiné</span><span>Paquistão</span><span>Polônia</span><span>Quênia</span><span>República Dominicana</span><span>República Eslovaca</span><span>Romênia</span><span>Ruanda</span><span>São Tomé e Príncipe</span><span>Senegal</span><span>Sudão</span><span>Tanzânia</span><span>Uruguai</span><span>Uzbequistão</span><span>Venezuela</span></div></div>
-                        <div class="paises-group"><h4>Grupo C</h4><div class="paises-list"><span>Antígua e Barbuda</span><span>Arábia Saudita</span><span>Argentina</span><span>Azerbaijão</span><span>Bahamas</span><span>Bahrein</span><span>Brunei Darussalam</span><span>Botswana</span><span>Bulgária</span><span>Canadá</span><span>Chile</span><span>Cingapura</span><span>Congo</span><span>Costa do Marfim</span><span>Cuba</span><span>Djibuti</span><span>Fiji</span><span>Gabão</span><span>Guatemala</span><span>Jamaica</span><span>Jordânia</span><span>Letônia</span><span>Libéria</span><span>Lituânia</span><span>Mali</span><span>Malta</span><span>Maurício</span><span>Mauritânia</span><span>México</span><span>Peru</span><span>República Democrática do Congo</span><span>República Tcheca</span><span>Rússia</span><span>San Marino</span><span>Santa Lúcia</span><span>São Cristóvão e Névis</span><span>São Vicente e Granadinas</span><span>Taiwan</span><span>Trinidad e Tobago</span><span>Ucrânia</span><span>Uganda</span><span>Zâmbia</span></div></div>
-                        <div class="paises-group"><h4>Grupo D</h4><div class="paises-list"><span>Alemanha</span><span>Angola</span><span>Áustria</span><span>Bélgica</span><span>Catar</span><span>Cazaquistão</span><span>China</span><span>Coréia do Sul</span><span>Croácia</span><span>Dinamarca</span><span>Emirados Árabes</span><span>Espanha</span><span>Estados Unidos da América</span><span>Estônia</span><span>Finlândia</span><span>França</span><span>Grécia</span><span>Hong Kong</span><span>Irlanda</span><span>Islândia</span><span>Israel</span><span>Itália</span><span>Japão</span><span>Liechtenstein</span><span>Luxemburgo</span><span>Mônaco</span><span>Montenegro</span><span>Noruega</span><span>Omã</span><span>Países Baixos</span><span>Portugal</span><span>Reino Unido</span><span>República Quirguiz</span><span>Sérvia</span><span>Suécia</span><span>Suíça</span></div></div>
-                    </div>
-                </div>
-            </div></div>`;
-            document.getElementById('paises-modal-container').innerHTML = html;
-        }
-        
-        function toggleInfoPanel() {
-            const infoCard = document.getElementById('info-solicitacao-card');
-            const btn = document.getElementById('toggle-info-btn');
-            const isHidden = infoCard.style.display === 'none';
-            if (isHidden) {
-                infoCard.style.display = 'block';
-                btn.innerHTML = `<i class="fas fa-user-minus"></i> Ocultar Info.`;
-                btn.style.backgroundColor = 'var(--laranja)';
-            } else {
-                infoCard.style.display = 'none';
-                btn.innerHTML = `<i class="fas fa-user-plus"></i> Adicionar Info.`;
-                btn.style.backgroundColor = 'var(--cinza-escuro)';
-            }
+
+        function toggleInfoViajante() {
+            const card = document.getElementById('info-viajante-card');
+            const isHidden = card.style.display === 'none';
+            card.style.display = isHidden ? 'block' : 'none';
+            
+            const headerText = document.getElementById('btn-header-text');
+            headerText.textContent = isHidden ? 'Ocultar Info. Viajante' : 'Adicionar Info. Viajante';
+            
             atualizarPreview();
+        }
+
+        function abrirModalPaises() {
+            document.getElementById('paises-modal').classList.add('active');
+        }
+
+        function fecharModalPaises() {
+            document.getElementById('paises-modal').classList.remove('active');
         }
 
         function filtrarPaises() {
             const termo = document.getElementById('search-paises').value.toLowerCase();
-            const paises = document.querySelectorAll('.paises-list span');
-            paises.forEach(pais => {
-                const nomePais = pais.textContent.toLowerCase();
-                if (nomePais.includes(termo)) {
-                    pais.style.display = 'block';
-                } else {
-                    pais.style.display = 'none';
-                }
+            const grupos = document.querySelectorAll('.paises-group');
+            
+            grupos.forEach(grupo => {
+                const paises = grupo.querySelectorAll('.paises-list span');
+                let grupoTemPaises = false;
+                
+                paises.forEach(pais => {
+                    const nomePais = pais.textContent.toLowerCase();
+                    if (nomePais.includes(termo)) {
+                        pais.style.display = 'block';
+                        grupoTemPaises = true;
+                    } else {
+                        pais.style.display = 'none';
+                    }
+                });
+                
+                grupo.style.display = grupoTemPaises ? 'block' : 'none';
             });
         }
 
-        window.onload = async function() {
-            renderizarCalculadoraNacional();
-            renderizarCalculadoraInternacional();
-            renderizarModalPaises();
+        function gerarTXT() {
+            const viajanteNome = document.getElementById('viajante-nome').value || 'relatorio';
+            let txt = `RELATÓRIO DE CÁLCULO DE DIÁRIA\n====================================\n\n`;
             
-            await carregarTodosOsValores();
-            await fetchDolarRate();
-            setInterval(fetchDolarRate, 60 * 1000); // Atualiza a cotação a cada 1 minuto
-            
-            calcularValoresNacionais();
-            calcularValoresInternacionais();
-            atualizarPreview();
+            const sections = document.querySelectorAll('.preview-section');
+            sections.forEach(section => {
+                if (section.style.display === 'none') return;
+                const h6 = section.querySelector('h6');
+                txt += `${h6.textContent.replace(/[^\w\sÀ-ÿ]/g, '').trim().toUpperCase()}\n------------------------------------\n`;
+                
+                const items = section.querySelectorAll('.preview-grid strong');
+                const values = section.querySelectorAll('.preview-grid span');
+                items.forEach((item, i) => {
+                    if (item.style.display !== 'none') {
+                        txt += `${item.textContent} ${values[i].textContent}\n`;
+                    }
+                });
+                txt += '\n';
+            });
 
-            ['simulador-nome', 'viajante-nome', 'viajante-id', 'viajante-banco', 'viajante-agencia', 'viajante-conta'].forEach(id => {
+            const blob = new Blob([txt], {type: 'text/plain;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Calculo_Diaria_${viajanteNome.replace(/ /g, '_')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function gerarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header
+            doc.setFillColor(30, 58, 138);
+            doc.rect(0, 0, 210, 40, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(20);
+            doc.setFont(undefined, 'bold');
+            doc.text('CÁLCULO DE DIÁRIA', 105, 15, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            doc.text('Decreto nº 46.611/2019', 105, 25, { align: 'center' });
+            
+            doc.setFontSize(9);
+            doc.text('SEDEICS - Secretaria de Desenvolvimento Econômico, Indústria, Comércio e Serviços', 105, 32, { align: 'center' });
+
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            let yPos = 50;
+
+            // Dados do Viajante (se existir)
+            if (document.getElementById('preview-viajante').style.display !== 'none') {
+                doc.setFont(undefined, 'bold');
+                doc.text('DADOS DO VIAJANTE', 20, yPos);
+                yPos += 8;
+
+                doc.setFont(undefined, 'normal');
+                doc.text(`Calculado por: ${document.getElementById('prev-calculador').textContent}`, 20, yPos);
+                yPos += 6;
+                doc.text(`Nome do Viajante: ${document.getElementById('prev-viajante').textContent}`, 20, yPos);
+                yPos += 6;
+                doc.text(`ID Funcional: ${document.getElementById('prev-id').textContent}`, 20, yPos);
+                yPos += 6;
+                doc.text(`Dados Bancários: ${document.getElementById('prev-banco').textContent}`, 20, yPos);
+                yPos += 12;
+            }
+
+            // Parâmetros do Cálculo
+            doc.setFont(undefined, 'bold');
+            doc.text('PARÂMETROS DO CÁLCULO', 20, yPos);
+            yPos += 8;
+
+            doc.setFont(undefined, 'normal');
+            doc.text(`Tipo de Viagem: ${document.getElementById('prev-tipo').textContent}`, 20, yPos);
+            yPos += 6;
+            doc.text(`Grupo: ${document.getElementById('prev-grupo').textContent}`, 20, yPos);
+            yPos += 6;
+            doc.text(`Localidade: ${document.getElementById('prev-local').textContent}`, 20, yPos);
+            yPos += 6;
+
+            if (document.getElementById('lbl-cotacao').style.display !== 'none') {
+                doc.text(`Cotação do Dólar: ${document.getElementById('prev-cotacao').textContent}`, 20, yPos);
+                yPos += 6;
+                doc.text(`Fonte da Cotação: ${document.getElementById('prev-fonte').textContent}`, 20, yPos);
+                yPos += 6;
+                doc.text(`Data do Cálculo: ${document.getElementById('prev-data').textContent}`, 20, yPos);
+                yPos += 6;
+            }
+
+            yPos += 6;
+
+            // Detalhamento dos Custos
+            doc.setFont(undefined, 'bold');
+            doc.text('DETALHAMENTO DOS CUSTOS', 20, yPos);
+            yPos += 8;
+
+            doc.setFont(undefined, 'normal');
+            if (document.getElementById('lbl-alim').style.display !== 'none') {
+                doc.text(`Total Alimentação: ${document.getElementById('prev-alim').textContent}`, 20, yPos);
+                yPos += 6;
+                doc.text(`Total Pousada: ${document.getElementById('prev-pous').textContent}`, 20, yPos);
+                yPos += 6;
+            }
+
+            if (document.getElementById('lbl-diaria-int').style.display !== 'none') {
+                doc.text(`Diária Completa: ${document.getElementById('prev-diaria-int').textContent}`, 20, yPos);
+                yPos += 6;
+            }
+
+            doc.text(`Total Translado: ${document.getElementById('prev-trans').textContent}`, 20, yPos);
+            yPos += 10;
+
+            doc.setLineWidth(0.5);
+            doc.line(15, yPos, 195, yPos);
+            yPos += 8;
+
+            doc.setFont(undefined, 'bold');
+            doc.setFontSize(14);
+            doc.text(`VALOR TOTAL GERAL: ${document.getElementById('prev-total').textContent}`, 20, yPos);
+
+            yPos += 15;
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(100, 116, 139);
+            doc.text('Documento gerado automaticamente pelo Sistema de Cálculo de Diária - SEDEICS', 105, yPos, { align: 'center' });
+            yPos += 4;
+            doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 105, yPos, { align: 'center' });
+
+            const viajanteNome = document.getElementById('viajante-nome').value || 'Relatorio';
+            doc.save(`Calculo_Diaria_${viajanteNome.replace(/ /g, '_')}.pdf`);
+        }
+
+        // Inicialização
+        window.addEventListener('load', async () => {
+            await carregarDados();
+            await atualizarDolar();
+            
+            setInterval(atualizarDolar, 2 * 60 * 1000);
+
+            ['grupo-nac', 'cidade-nac', 'diarias-nac', 'pernoites-nac', 'translados-nac'].forEach(id => {
+                document.getElementById(id).addEventListener('input', calcularNacional);
+            });
+
+            ['grupo-int', 'pais-grupo-int', 'diarias-int', 'translados-int'].forEach(id => {
+                document.getElementById(id).addEventListener('input', calcularInternacional);
+            });
+
+            ['calculador-nome', 'viajante-nome', 'viajante-id', 'viajante-banco', 'viajante-agencia', 'viajante-conta'].forEach(id => {
                 document.getElementById(id).addEventListener('input', atualizarPreview);
             });
-            document.getElementById('toggle-info-btn').addEventListener('click', toggleInfoPanel);
 
-            const paisesModal = document.getElementById('paises-modal');
-            document.getElementById('paises-info-btn').addEventListener('click', () => paisesModal.classList.add('active'));
-            paisesModal.querySelector('.modal-close-btn').addEventListener('click', () => paisesModal.classList.remove('active'));
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', atualizarPreview);
+            });
+
+            // Modal de países
             document.getElementById('search-paises').addEventListener('keyup', filtrarPaises);
-        };
+            
+            document.getElementById('paises-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'paises-modal') {
+                    fecharModalPaises();
+                }
+            });
+
+            // Fechar modal com ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    fecharModalPaises();
+                }
+            });
+
+            calcularNacional();
+            atualizarPreview();
+        });
     </script>
 </body>
 </html>

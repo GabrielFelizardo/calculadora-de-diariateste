@@ -1,8 +1,11 @@
 /****************************************************************
  * CONFIGURAÇÃO
  ****************************************************************/
-const SHEET_ID = "170poPY9cm8AwAt-J53iq3F-BVX5dTCa-zhA2aArHPJU"; // ID da sua planilha
-const SECRET_API_KEY = "subics2025"; // Sua chave secreta
+
+// Busca configurações das Properties (mais seguro)
+const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID')
+
+const SECRET_API_KEY = PropertiesService.getScriptProperties().getProperty('SECRET_API_KEY')
 
 /****************************************************************
  * FUNÇÃO GET - LÊ TODOS OS DADOS DA PLANILHA

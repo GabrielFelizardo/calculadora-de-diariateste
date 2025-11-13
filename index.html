@@ -1111,9 +1111,9 @@
                             <strong>Grupo:</strong><span id="prev-grupo">...</span>
                             <strong>Localidade:</strong><span id="prev-local">...</span>
                             <strong id="lbl-cotacao" style="display:none;">Cotação do Dólar:</strong><span id="prev-cotacao" style="display:none;">...</span>
-                            <strong id="lbl-fonte" style="display:none;">Fonte da Cotação:</strong><span id="prev-fonte" style="display:none;">HG Finance</span>
-                            <strong id="lbl-metodologia" style="display:none;">Metodologia:</strong><span id="prev-metodologia" style="display:none;">Dados financeiros consolidados de múltiplas fontes oficiais do mercado brasileiro, com atualização frequente</span>
-                            <strong id="lbl-link-fonte" style="display:none;">Documentação:</strong><span id="prev-link-fonte" style="display:none;"><a href="https://hgbrasil.com/status/finance" target="_blank">hgbrasil.com/status/finance</a></span>
+                            <strong id="lbl-fonte" style="display:none;">Fonte da Cotação:</strong><span id="prev-fonte" style="display:none;">Carregando...</span>
+                            <strong id="lbl-metodologia" style="display:none;">Metodologia:</strong><span id="prev-metodologia" style="display:none;">Dados financeiros consolidados de fontes confiáveis do mercado cambial brasileiro</span>
+                            <strong id="lbl-link-fonte" style="display:none;">Documentação:</strong><span id="prev-link-fonte" style="display:none;"><a href="https://economia.awesomeapi.com.br" target="_blank">Ver documentação</a></span>
                             <strong id="lbl-data" style="display:none;">Data do Cálculo:</strong><span id="prev-data" style="display:none;">...</span>
                         </div>
                     </div>
@@ -1414,47 +1414,126 @@
         }
 
         async function atualizarDolar() {
-            try {
-                const refreshIcon = document.getElementById('refresh-icon');
-                if (refreshIcon) {
-                    refreshIcon.classList.add('refresh-loading');
+            const refreshIcon = document.getElementById('refresh-icon');
+            if (refreshIcon) {
+                refreshIcon.classList.add('refresh-loading');
+            }
+            
+            document.getElementById('dolar-status').textContent = 'Atualizando...';
+            document.getElementById('dolar-icon').style.color = '#f59e0b';
+            
+            console.log('=== 💱 INICIANDO BUSCA DE COTAÇÃO ===');
+            console.log('📅 Data/Hora:', new Date().toLocaleString('pt-BR'));
+            
+            // Proxy CORS para contornar bloqueios
+            const corsProxy = 'https://api.allorigins.win/raw?url=';
+            
+            // Lista de APIs para tentar em ordem
+            const apis = [
+                {
+                    name: 'AwesomeAPI (direto)',
+                    url: 'https://economia.awesomeapi.com.br/last/USD-BRL',
+                    extract: (data) => parseFloat(data.USDBRL.bid),
+                    fonte: 'AwesomeAPI',
+                    useProxy: false
+                },
+                {
+                    name: 'BrasilAPI (direto)',
+                    url: 'https://brasilapi.com.br/api/v2/currency/USD',
+                    extract: (data) => parseFloat(data[0].bid),
+                    fonte: 'BrasilAPI',
+                    useProxy: false
+                },
+                {
+                    name: 'AwesomeAPI (via proxy)',
+                    url: corsProxy + encodeURIComponent('https://economia.awesomeapi.com.br/last/USD-BRL'),
+                    extract: (data) => parseFloat(data.USDBRL.bid),
+                    fonte: 'AwesomeAPI',
+                    useProxy: true
+                },
+                {
+                    name: 'HG Finance (via proxy)',
+                    url: corsProxy + encodeURIComponent('https://api.hgbrasil.com/finance'),
+                    extract: (data) => parseFloat(data.results.currencies.USD.buy),
+                    fonte: 'HG Finance',
+                    useProxy: true
+                },
+                {
+                    name: 'Exchangerate API',
+                    url: 'https://open.er-api.com/v6/latest/USD',
+                    extract: (data) => parseFloat(data.rates.BRL),
+                    fonte: 'ExchangeRate-API',
+                    useProxy: false
                 }
-                
-                document.getElementById('dolar-status').textContent = 'Atualizando...';
-                document.getElementById('dolar-icon').style.color = '#f59e0b';
-                
-                console.log('=== 💱 ATUALIZANDO COTAÇÃO (HG Finance) ===');
-                console.log('📅 Data/Hora:', new Date().toLocaleString('pt-BR'));
-                
-                const response = await fetch('https://api.hgbrasil.com/finance');
-                const data = await response.json();
-                
-                console.log('📥 Resposta HG Finance:', data);
-                
-                dolarRate = parseFloat(data.results.currencies.USD.buy);
-                
-                console.log('💰 Cotação USD (buy/compra):', dolarRate);
-                console.log('🎯 Valor final usado:', formatCurrency(dolarRate));
-                
-                document.getElementById('dolar-value').textContent = formatCurrency(dolarRate);
-                document.getElementById('dolar-status').textContent = 'Atualizado';
-                document.getElementById('dolar-icon').style.color = '#10b981';
-                
-                if (document.getElementById('internacional').classList.contains('active')) {
-                    calcularInternacional();
+            ];
+            
+            let sucesso = false;
+            let fonteUsada = '';
+            
+            for (const api of apis) {
+                try {
+                    console.log(`🔍 Tentando ${api.name}...`);
+                    
+                    const response = await fetch(api.url, {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' },
+                        mode: 'cors'
+                    });
+                    
+                    if (!response.ok) {
+                        console.warn(`⚠️ ${api.name} retornou status ${response.status}`);
+                        continue;
+                    }
+                    
+                    const data = await response.json();
+                    console.log(`📥 Resposta ${api.name}:`, data);
+                    
+                    const cotacao = api.extract(data);
+                    
+                    if (isNaN(cotacao) || cotacao <= 0 || cotacao > 10) {
+                        console.warn(`⚠️ ${api.name} retornou valor inválido: ${cotacao}`);
+                        continue;
+                    }
+                    
+                    dolarRate = cotacao;
+                    fonteUsada = api.fonte;
+                    sucesso = true;
+                    
+                    console.log(`✅ Sucesso com ${api.name}!`);
+                    console.log('💰 Cotação USD:', dolarRate);
+                    console.log('🎯 Valor final usado:', formatCurrency(dolarRate));
+                    
+                    document.getElementById('dolar-value').textContent = formatCurrency(dolarRate);
+                    document.getElementById('dolar-status').textContent = 'Atualizado';
+                    document.getElementById('dolar-icon').style.color = '#10b981';
+                    
+                    // Atualizar fonte na preview
+                    document.getElementById('prev-fonte').textContent = fonteUsada;
+                    
+                    if (document.getElementById('internacional').classList.contains('active')) {
+                        calcularInternacional();
+                    }
+                    
+                    break;
+                    
+                } catch (error) {
+                    console.warn(`❌ Erro com ${api.name}:`, error.message);
+                    continue;
                 }
-                
-                console.log('✅ Cotação atualizada com sucesso!');
-            } catch (error) {
-                console.error('❌ Erro ao buscar HG Finance:', error);
-                document.getElementById('dolar-value').textContent = 'Erro';
-                document.getElementById('dolar-status').textContent = 'Erro';
+            }
+            
+            if (!sucesso) {
+                console.error('❌ TODAS AS APIs FALHARAM! Usando cotação padrão: R$ 5,50');
+                console.warn('💡 DICA: Para melhor funcionamento, hospede o arquivo em um servidor web ou use extensão Live Server no VS Code');
+                dolarRate = 5.50;
+                document.getElementById('dolar-value').textContent = formatCurrency(dolarRate) + ' (padrão)';
+                document.getElementById('dolar-status').textContent = 'Offline';
                 document.getElementById('dolar-icon').style.color = '#ef4444';
-            } finally {
-                const refreshIcon = document.getElementById('refresh-icon');
-                if (refreshIcon) {
-                    refreshIcon.classList.remove('refresh-loading');
-                }
+                document.getElementById('prev-fonte').textContent = 'Valor padrão (APIs indisponíveis)';
+            }
+            
+            if (refreshIcon) {
+                refreshIcon.classList.remove('refresh-loading');
             }
         }
 
@@ -1800,18 +1879,11 @@
             if (document.getElementById('lbl-cotacao').style.display !== 'none') {
                 doc.text(`Cotação do Dólar: ${document.getElementById('prev-cotacao').textContent}`, 20, yPos);
                 yPos += 6;
-                doc.text('Fonte: HG Finance', 20, yPos);
+                doc.text(`Fonte: ${document.getElementById('prev-fonte').textContent}`, 20, yPos);
                 yPos += 6;
-                doc.text('Metodologia: Dados financeiros consolidados de múltiplas fontes', 20, yPos);
+                doc.text('Metodologia: Dados financeiros consolidados de fontes', 20, yPos);
                 yPos += 6;
-                doc.text('oficiais do mercado brasileiro, com atualização frequente', 20, yPos);
-                yPos += 6;
-                
-                doc.setTextColor(30, 58, 138);
-                doc.textWithLink('Documentação: hgbrasil.com/status/finance', 20, yPos, {
-                    url: 'https://hgbrasil.com/status/finance'
-                });
-                doc.setTextColor(0, 0, 0);
+                doc.text('confiáveis do mercado cambial brasileiro', 20, yPos);
                 yPos += 6;
                 
                 doc.text(`Data do Cálculo: ${document.getElementById('prev-data').textContent}`, 20, yPos);

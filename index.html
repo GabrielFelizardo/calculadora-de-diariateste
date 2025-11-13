@@ -832,6 +832,14 @@
                         <i class="fas fa-circle" id="dolar-icon"></i>
                         <span id="dolar-status">Carregando...</span>
                     </div>
+                    <select id="fonte-cotacao" class="form-select form-select-sm mt-2" style="font-size: 0.7rem; padding: 0.25rem; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);" onchange="atualizarDolar()">
+                        <option value="auto">🔄 Automático (fallback)</option>
+                        <option value="bcb">🏦 Banco Central do Brasil</option>
+                        <option value="hgfinance">💹 HG Finance</option>
+                        <option value="awesomeapi">⚡ AwesomeAPI</option>
+                        <option value="brasilapi">🇧🇷 BrasilAPI</option>
+                        <option value="exchangerate">🌍 ExchangeRate-API</option>
+                    </select>
                 </div>
                 <button class="btn-refresh-dolar" onclick="atualizarDolar()" title="Atualizar cotação">
                     <i class="fas fa-sync-alt" id="refresh-icon"></i>
@@ -1425,47 +1433,90 @@
             console.log('=== 💱 INICIANDO BUSCA DE COTAÇÃO ===');
             console.log('📅 Data/Hora:', new Date().toLocaleString('pt-BR'));
             
+            // Verifica qual fonte o usuário escolheu
+            const fonteEscolhida = document.getElementById('fonte-cotacao').value;
+            console.log('🎯 Fonte escolhida:', fonteEscolhida);
+            
             // Proxy CORS para contornar bloqueios
             const corsProxy = 'https://api.allorigins.win/raw?url=';
             
-            // Lista de APIs para tentar em ordem
-            const apis = [
-                {
-                    name: 'AwesomeAPI (direto)',
+            // Lista de APIs
+            const todasApis = {
+                bcb: {
+                    name: 'Banco Central do Brasil',
+                    url: 'https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao=%27' + 
+                         new Date().toISOString().split('T')[0] + '%27&$top=1&$format=json&$select=cotacaoCompra,cotacaoVenda',
+                    extract: (data) => parseFloat(data.value[0]?.cotacaoCompra || 5.50),
+                    fonte: 'Banco Central do Brasil',
+                    useProxy: false
+                },
+                hgfinance: {
+                    name: 'HG Finance',
+                    url: 'https://api.hgbrasil.com/finance',
+                    extract: (data) => parseFloat(data.results.currencies.USD.buy),
+                    fonte: 'HG Finance',
+                    useProxy: false
+                },
+                awesomeapi: {
+                    name: 'AwesomeAPI',
                     url: 'https://economia.awesomeapi.com.br/last/USD-BRL',
                     extract: (data) => parseFloat(data.USDBRL.bid),
                     fonte: 'AwesomeAPI',
                     useProxy: false
                 },
-                {
-                    name: 'BrasilAPI (direto)',
+                brasilapi: {
+                    name: 'BrasilAPI',
                     url: 'https://brasilapi.com.br/api/v2/currency/USD',
                     extract: (data) => parseFloat(data[0].bid),
                     fonte: 'BrasilAPI',
                     useProxy: false
                 },
-                {
-                    name: 'AwesomeAPI (via proxy)',
-                    url: corsProxy + encodeURIComponent('https://economia.awesomeapi.com.br/last/USD-BRL'),
-                    extract: (data) => parseFloat(data.USDBRL.bid),
-                    fonte: 'AwesomeAPI',
-                    useProxy: true
-                },
-                {
-                    name: 'HG Finance (via proxy)',
-                    url: corsProxy + encodeURIComponent('https://api.hgbrasil.com/finance'),
-                    extract: (data) => parseFloat(data.results.currencies.USD.buy),
-                    fonte: 'HG Finance',
-                    useProxy: true
-                },
-                {
-                    name: 'Exchangerate API',
+                exchangerate: {
+                    name: 'ExchangeRate-API',
                     url: 'https://open.er-api.com/v6/latest/USD',
                     extract: (data) => parseFloat(data.rates.BRL),
                     fonte: 'ExchangeRate-API',
                     useProxy: false
                 }
-            ];
+            };
+            
+            // Define ordem de tentativas baseado na escolha
+            let apis = [];
+            
+            if (fonteEscolhida === 'auto') {
+                // Modo automático: tenta BCB primeiro, depois HG, depois outras
+                apis = [
+                    todasApis.bcb,
+                    todasApis.hgfinance,
+                    todasApis.awesomeapi,
+                    todasApis.brasilapi,
+                    // Tentar com proxy se falhar
+                    {
+                        name: 'HG Finance (via proxy)',
+                        url: corsProxy + encodeURIComponent('https://api.hgbrasil.com/finance'),
+                        extract: (data) => parseFloat(data.results.currencies.USD.buy),
+                        fonte: 'HG Finance',
+                        useProxy: true
+                    },
+                    todasApis.exchangerate
+                ];
+            } else {
+                // Modo manual: tenta só a escolhida, depois fallback
+                const apiEscolhida = todasApis[fonteEscolhida];
+                apis = [
+                    apiEscolhida,
+                    // Se falhar, tenta com proxy
+                    {
+                        name: apiEscolhida.name + ' (via proxy)',
+                        url: corsProxy + encodeURIComponent(apiEscolhida.url),
+                        extract: apiEscolhida.extract,
+                        fonte: apiEscolhida.fonte,
+                        useProxy: true
+                    },
+                    // Fallback final: outras APIs
+                    ...Object.values(todasApis).filter(api => api !== apiEscolhida)
+                ];
+            }
             
             let sucesso = false;
             let fonteUsada = '';
@@ -1524,7 +1575,7 @@
             
             if (!sucesso) {
                 console.error('❌ TODAS AS APIs FALHARAM! Usando cotação padrão: R$ 5,50');
-                console.warn('💡 DICA: Para melhor funcionamento, hospede o arquivo em um servidor web ou use extensão Live Server no VS Code');
+                console.warn('💡 DICA: Tente selecionar uma fonte diferente no dropdown');
                 dolarRate = 5.50;
                 document.getElementById('dolar-value').textContent = formatCurrency(dolarRate) + ' (padrão)';
                 document.getElementById('dolar-status').textContent = 'Offline';

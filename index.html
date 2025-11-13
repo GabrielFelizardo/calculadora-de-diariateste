@@ -814,7 +814,7 @@
 <body>
     <div class="gov-header">
         <div class="container-fluid">
-            <img src="SUA_LOGO_BASE64_AQUI" 
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='90'%3E%3Crect fill='%231e3a8a' width='200' height='90'/%3E%3Ctext x='100' y='50' fill='white' font-size='20' text-anchor='middle' font-weight='bold'%3ESEDEICS%3C/text%3E%3C/svg%3E" 
                  alt="Logo SEDEICS" 
                  class="gov-logo-img">
             <div style="flex: 1; text-align: center;">
@@ -1011,7 +1011,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">
                                             <i class="fas fa-globe-americas"></i> Grupo de Países
-                                            <i class="fas fa-info-circle info-icon" onclick="abrirModalPaises()" title="Ver lista de países"></i>
+                                            <i class="fas fa-info-circle info-icon" onclick="abrirModalPaises()" title="Ver lista de países" style="cursor: pointer; margin-left: 0.5rem;"></i>
                                         </label>
                                         <select class="form-select" id="pais-grupo-int">
                                             <option value="">Selecione...</option>
@@ -1111,9 +1111,9 @@
                             <strong>Grupo:</strong><span id="prev-grupo">...</span>
                             <strong>Localidade:</strong><span id="prev-local">...</span>
                             <strong id="lbl-cotacao" style="display:none;">Cotação do Dólar:</strong><span id="prev-cotacao" style="display:none;">...</span>
-                            <strong id="lbl-fonte" style="display:none;">Fonte da Cotação:</strong><span id="prev-fonte" style="display:none;">AwesomeAPI</span>
-                            <strong id="lbl-metodologia" style="display:none;">Metodologia:</strong><span id="prev-metodologia" style="display:none;">Agregador de cotações comerciais do mercado cambial brasileiro, com dados em tempo real (atualização a cada 30s)</span>
-                            <strong id="lbl-link-fonte" style="display:none;">Documentação:</strong><span id="prev-link-fonte" style="display:none;"><a href="https://docs.awesomeapi.com.br/api-de-moedas" target="_blank">docs.awesomeapi.com.br</a></span>
+                            <strong id="lbl-fonte" style="display:none;">Fonte da Cotação:</strong><span id="prev-fonte" style="display:none;">HG Finance</span>
+                            <strong id="lbl-metodologia" style="display:none;">Metodologia:</strong><span id="prev-metodologia" style="display:none;">Dados financeiros consolidados de múltiplas fontes oficiais do mercado brasileiro, com atualização frequente</span>
+                            <strong id="lbl-link-fonte" style="display:none;">Documentação:</strong><span id="prev-link-fonte" style="display:none;"><a href="https://hgbrasil.com/status/finance" target="_blank">hgbrasil.com/status/finance</a></span>
                             <strong id="lbl-data" style="display:none;">Data do Cálculo:</strong><span id="prev-data" style="display:none;">...</span>
                         </div>
                     </div>
@@ -1161,7 +1161,6 @@
             <div class="modal-body">
                 <input type="search" class="form-control" id="search-paises" placeholder="🔍 Pesquisar país...">
                 <div class="paises-grid">
-                    <!-- [Grupos de países - mesmo código anterior] -->
                     <div class="paises-group">
                         <h4><i class="fas fa-circle" style="color: var(--success);"></i> Grupo A</h4>
                         <div class="paises-list">
@@ -1424,17 +1423,17 @@
                 document.getElementById('dolar-status').textContent = 'Atualizando...';
                 document.getElementById('dolar-icon').style.color = '#f59e0b';
                 
-                console.log('=== 💱 ATUALIZANDO COTAÇÃO (AwesomeAPI) ===');
+                console.log('=== 💱 ATUALIZANDO COTAÇÃO (HG Finance) ===');
                 console.log('📅 Data/Hora:', new Date().toLocaleString('pt-BR'));
                 
-                const response = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
+                const response = await fetch('https://api.hgbrasil.com/finance');
                 const data = await response.json();
                 
-                console.log('📥 Resposta AwesomeAPI:', data);
+                console.log('📥 Resposta HG Finance:', data);
                 
-                dolarRate = parseFloat(data.USDBRL.bid);
+                dolarRate = parseFloat(data.results.currencies.USD.buy);
                 
-                console.log('💰 Cotação USD (bid/venda):', dolarRate);
+                console.log('💰 Cotação USD (buy/compra):', dolarRate);
                 console.log('🎯 Valor final usado:', formatCurrency(dolarRate));
                 
                 document.getElementById('dolar-value').textContent = formatCurrency(dolarRate);
@@ -1447,7 +1446,7 @@
                 
                 console.log('✅ Cotação atualizada com sucesso!');
             } catch (error) {
-                console.error('❌ Erro ao buscar AwesomeAPI:', error);
+                console.error('❌ Erro ao buscar HG Finance:', error);
                 document.getElementById('dolar-value').textContent = 'Erro';
                 document.getElementById('dolar-status').textContent = 'Erro';
                 document.getElementById('dolar-icon').style.color = '#ef4444';
@@ -1730,7 +1729,7 @@
                     if (item.style.display !== 'none') {
                         let valorTexto = values[i].textContent;
                         if (item.id === 'lbl-link-fonte') {
-                            valorTexto = 'https://docs.awesomeapi.com.br/api-de-moedas';
+                            valorTexto = 'https://hgbrasil.com/status/finance';
                         }
                         txt += `${item.textContent} ${valorTexto}\n`;
                     }
@@ -1801,16 +1800,16 @@
             if (document.getElementById('lbl-cotacao').style.display !== 'none') {
                 doc.text(`Cotação do Dólar: ${document.getElementById('prev-cotacao').textContent}`, 20, yPos);
                 yPos += 6;
-                doc.text('Fonte: AwesomeAPI', 20, yPos);
+                doc.text('Fonte: HG Finance', 20, yPos);
                 yPos += 6;
-                doc.text('Metodologia: Agregador de cotações comerciais do mercado cambial', 20, yPos);
+                doc.text('Metodologia: Dados financeiros consolidados de múltiplas fontes', 20, yPos);
                 yPos += 6;
-                doc.text('brasileiro, com dados em tempo real (atualização a cada 30s)', 20, yPos);
+                doc.text('oficiais do mercado brasileiro, com atualização frequente', 20, yPos);
                 yPos += 6;
                 
                 doc.setTextColor(30, 58, 138);
-                doc.textWithLink('Documentação: docs.awesomeapi.com.br', 20, yPos, {
-                    url: 'https://docs.awesomeapi.com.br/api-de-moedas'
+                doc.textWithLink('Documentação: hgbrasil.com/status/finance', 20, yPos, {
+                    url: 'https://hgbrasil.com/status/finance'
                 });
                 doc.setTextColor(0, 0, 0);
                 yPos += 6;
@@ -1903,5 +1902,3 @@
     </script>
 </body>
 </html>
-
-
